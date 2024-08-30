@@ -521,6 +521,17 @@ input[type="range"] {
     padding: 0;
     margin: 5px;
     transition: transform 0.2s;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-color span {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 .custom-color.selected {
