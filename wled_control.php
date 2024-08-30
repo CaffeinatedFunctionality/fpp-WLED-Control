@@ -5,16 +5,14 @@ require_once("common.php");
 
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
+<div class="head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WLED Control Preview</title>
+    <title>WLED Control</title>
     <link href="css/wled_control.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-</head>
-<body>
+</d>
+<div class="body">
     <div class="top">
         <button id="powerButton">
             <i class="material-icons">power_settings_new</i>
@@ -138,5 +136,4 @@ require_once("common.php");
             <button id="cancelSavePalette">Cancel</button>
         </div>
     </div>
-</body>
-</html>
+</div>
