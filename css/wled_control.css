@@ -1,0 +1,572 @@
+:root {
+  --background-color: #222;
+  --text-color: #fff;
+  --button-color: #333;
+  --button-hover-color: #444;
+  --active-color: #f00;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--button-color);
+  height: 60px; /* Adjust this value to match your tab height */
+}
+
+.top-btn {
+  background-color: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+}
+
+.top-btn i {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.brightness-control {
+  display: flex;
+  align-items: center;
+}
+
+.brightness-control span {
+  margin-right: 10px;
+}
+
+.content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+#colorPicker {
+  margin-bottom: 10px;
+  /* Center the color picker itself if it's not already centered */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#saturationSlider {
+  width: 100%;
+  height: 12px;
+  margin-bottom: 10px;
+}
+
+#saturationSlider .iro__slider__gradient {
+  transform: scaleX(-1);
+}
+
+.color-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.color-presets, .segment-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 10px 0;
+  width: 100%;
+}
+
+.color-preset, .segment-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.random-preset {
+  background-color: #888;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.segment-btn {
+  background-color: var(--button-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.palette-section {
+  width: 100%;
+  max-width: 300px;
+}
+
+.palette-section h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.palette-icon {
+  margin-right: 8px;
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 5px 10px 5px 30px;
+  border-radius: 20px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  box-sizing: border-box;
+  height: 40px;
+}
+
+.search-input::placeholder {
+  color: #888;
+}
+
+#paletteList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.palette-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: #333;
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  height: 40px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.palette-name {
+  color: #fff;
+  padding: 8px;
+  text-align: center;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.palette-preview {
+  height: 4px;
+  width: 100%;
+}
+
+.bottom-tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #222;
+}
+
+.tab-btn {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px;
+  transition: background-color 0.3s;
+  flex: 1;
+}
+
+.tab-btn:hover {
+  background-color: #303030;
+}
+
+.tab-btn.active {
+  background-color: #444; /* Lighter hue for active tab */
+}
+
+.tab-btn i {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.tab-content {
+  display: none;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+#brightnessSlider {
+    width: 100%;
+    max-width: 300px;
+    height: 20px;
+    margin: 10px 0;
+}
+
+.iro__slider {
+    background: none !important;
+}
+
+.iro__slider__value {
+    background: linear-gradient(to right, black, white) !important;
+}
+
+.effect-btn {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.effect-name {
+  flex-grow: 1;
+  font-size: 14px;
+  padding-left: 10px;
+}
+
+.effect-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.slider-container {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 20px;
+}
+
+.slider-container h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.slider-wrapper i {
+  margin-right: 10px;
+}
+
+.slider-wrapper input[type="range"] {
+  flex-grow: 1;
+  width: calc(100% - 34px); /* Adjust based on the icon width */
+}
+
+.effect-mode-title {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 5px 10px 5px 30px;
+  border-radius: 20px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  box-sizing: border-box;
+  height: 40px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+#effectList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.effect-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  height: 40px;
+}
+
+.effect-btn:hover {
+  background-color: #444;
+}
+
+@media (max-width: 600px) {
+  .effect-btn {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.models-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.model-btn {
+  display: flex;
+  align-items: center;
+  background-color: #333;
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+  text-align: left;
+  color: #fff;
+}
+
+.model-checkbox {
+  margin-right: 10px;
+}
+
+.model-name {
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+#modelList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+#powerButton, #settingsButton {
+  background-color: transparent;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  padding: 10px;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  transition: background-color 0.3s;
+}
+
+#powerButton i,
+#settingsButton i {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+#powerButton:hover,
+#settingsButton:hover {
+  background-color: var(--button-hover-color);
+}
+
+#powerButton.active {
+  background-color: #666666;
+}
+
+.bottom-tabs {
+  display: flex;
+  justify-content: space-around;
+  background-color: #222;
+}
+
+.tab-btn {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px;
+  transition: background-color 0.3s;
+  flex: 1;
+}
+
+.tab-btn:hover {
+  background-color: #303030;
+}
+
+.tab-btn.active {
+  background-color: #444; /* Lighter hue for active tab */
+}
+
+.tab-btn i {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.brightness-control {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.brightness-control i {
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+#brightnessSlider {
+  width: 100%;
+  max-width: 200px;
+}
+
+.custom-colors {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.custom-color {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 5px;
+    transition: transform 0.2s;
+}
+
+.custom-color.selected {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px #fff;
+}
+
+#saveCustomPalette {
+    background-color: #4CAF50;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#saveCustomPalette i {
+    font-size: 20px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: var(--background-color);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 300px;
+}
+
+#customPaletteName {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+#confirmSavePalette, #cancelSavePalette {
+    padding: 5px 10px;
+    margin-right: 10px;
+}
