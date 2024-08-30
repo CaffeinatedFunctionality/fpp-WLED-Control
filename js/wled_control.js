@@ -15,10 +15,12 @@ $(document).ready(function () {
   function GetWledControlConfig() {
     $.ajax({
       type: "GET",
-      url: "api/configfile/plugin.fpp-WLED-Control.json",
+      url: "/api/configfile/plugin.fpp-WLED-Control.json",
       dataType: "json",
       contentType: "application/json",
+      cache: false, // Disable caching
       success: function (data) {
+        console.log("Config loaded successfully:", data);
         wledControlConfig = data;
         if (!wledControlConfig.customPalettes) {
           wledControlConfig.customPalettes = [];
@@ -27,7 +29,40 @@ $(document).ready(function () {
         populatePalettes();
       },
       error: function (xhr, status, error) {
-        console.error("Error fetching WLED Control config:", error);
+        console.error("Error fetching WLED Control config. Status:", status, "Error:", error);
+        console.log("XHR object:", xhr);
+        
+        // If the error is due to parsing JSON, try to parse it manually
+        if (xhr.responseText) {
+          try {
+            wledControlConfig = JSON.parse(xhr.responseText);
+            console.log("Parsed config manually:", wledControlConfig);
+            if (!wledControlConfig.customPalettes) {
+              wledControlConfig.customPalettes = [];
+            }
+            updateUIFromConfig();
+            populatePalettes();
+            return;
+          } catch (e) {
+            console.error("Failed to parse response as JSON:", e);
+          }
+        }
+        
+        // If all else fails, use a default configuration
+        wledControlConfig = {
+          systems: [],
+          models: [],
+          speed: 100,
+          intensity: 100,
+          brightness: 100,
+          colors: [],
+          multisync: false,
+          effect: "WLED - Solid Pattern",
+          power: false,
+          customPalettes: []
+        };
+        updateUIFromConfig();
+        populatePalettes();
       },
     });
   }
