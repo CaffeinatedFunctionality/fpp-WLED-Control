@@ -15,23 +15,27 @@ $(document).ready(function () {
   function GetWledControlConfig() {
     const url = '/api/configfile/plugin.fpp-WLED-Control.json';
 
-    // First, try using Fetch API
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Config loaded successfully:", data);
-            processConfig(data);
-        })
-        .catch(error => {
-            console.error("Fetch error:", error);
-            // If Fetch fails, fall back to XMLHttpRequest
-            fallbackXHR();
-        });
+    if (window.fetch) {
+        // Use Fetch API if available
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Config loaded successfully:", data);
+                processConfig(data);
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                fallbackXHR();
+            });
+    } else {
+        // Fall back to XMLHttpRequest if Fetch is not available
+        fallbackXHR();
+    }
   }
 
   function fallbackXHR() {
@@ -539,6 +543,7 @@ $(document).ready(function () {
 
   let customColors = ['#ff0000', '#00ff00', '#0000ff']; // Default colors
   let selectedCustomColorIndex = null;
+  let isCustomPaletteSaved = false;
 
   function updateCustomColorDisplay() {
     for (let i = 0; i < 3; i++) {
@@ -548,9 +553,11 @@ $(document).ready(function () {
 
   // Color picker change event
   colorPicker.on('color:change', function(color) {
-    // ... existing color change code ...
+    // Update the main color display
+    $('#colorDisplay').css('background-color', color.hexString);
     
-    if (selectedCustomColorIndex !== null) {
+    // If a custom color is selected and not saved, update it
+    if (selectedCustomColorIndex !== null && !isCustomPaletteSaved) {
       customColors[selectedCustomColorIndex] = color.hexString;
       updateCustomColorDisplay();
     }
@@ -564,7 +571,10 @@ $(document).ready(function () {
     $('.custom-color').removeClass('selected');
     $(this).addClass('selected');
     selectedCustomColorIndex = index;
-    colorPicker.color.set(customColors[index]);
+    
+    if (!isCustomPaletteSaved) {
+      colorPicker.color.set(customColors[index]);
+    }
   });
 
   // Save custom palette button
@@ -589,6 +599,7 @@ $(document).ready(function () {
       populatePalettes();
       $('#customPaletteModal').hide();
       $('#customPaletteName').val('');
+      isCustomPaletteSaved = true;
     }
   });
 
@@ -596,6 +607,15 @@ $(document).ready(function () {
   $('#cancelSavePalette').click(function() {
     $('#customPaletteModal').hide();
     $('#customPaletteName').val('');
+  });
+
+  // Color preset buttons
+  $('.color-preset').click(function() {
+    const color = $(this).css('background-color');
+    colorPicker.color.set(color);
+    isCustomPaletteSaved = false;
+    $('.custom-color').removeClass('selected');
+    selectedCustomColorIndex = null;
   });
 
   updateCustomColorDisplay();
