@@ -423,8 +423,8 @@ $(document).ready(function () {
         data.forEach((model, index) => {
           modelList.append(`
                         <div class="model-btn">
-                            <input type="checkbox" id="model-${index}" class="model-checkbox" data-model-id="${model.id}">
-                            <label for="model-${index}" class="model-name">${model.name}</label>
+                            <input type="checkbox" id="model-${index}" class="model-checkbox" data-model-id="${model.Name}">
+                            <label for="model-${index}" class="model-name">${model.Name}</label>
                         </div>
                     `);
         });
