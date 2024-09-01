@@ -30,9 +30,8 @@ require_once("common.php");
     <div class="content">
       <div id="colorsTab" class="tab-content active">
         <div id="colorPicker"></div>
-        <div class="color-controls">
-          <div id="brightnessSlider"></div>
-          <div id="saturationSlider"></div>
+        <div id="saturationSlider"></div>
+        <div class="color-controls">  
           <div class="color-presets">
             <button class="color-preset" style="background-color: red;"></button>
             <button class="color-preset" style="background-color: orange;"></button>

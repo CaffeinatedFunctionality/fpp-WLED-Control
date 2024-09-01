@@ -468,9 +468,6 @@ $(document).ready(function () {
     });
   }
 
-  populatePalettes();
-  populateEffects();
-
   // Tab switching
   $(".tab-btn").click(function () {
     const tabId = $(this).data("tab");
@@ -657,6 +654,7 @@ $(document).ready(function () {
     } else {
       selectedCustomColorIndex = index;
       colorPicker.color.set(customColors[index]);
+      updateSaturationSlider(colorPicker.color);
     }
   });
 
@@ -676,6 +674,10 @@ $(document).ready(function () {
         customColors.push(null);
     }
     updateCustomColorDisplay();
+    if (customColors[0]) {
+        colorPicker.color.set(customColors[0]);
+        updateSaturationSlider(colorPicker.color);
+    }
   });
 
   // ... rest of your existing code ...
@@ -727,5 +729,33 @@ $(document).ready(function () {
     getEffectsList();
     setWledEffect(wledControlConfig.effect);
     updateCustomColorDisplay();
+  });
+
+  function updateSaturationSlider(color) {
+    saturationSlider.color.hue = color.hue;
+    saturationSlider.color.value = color.value;
+  }
+
+  // Existing saturation slider event
+  saturationSlider.on("color:change", function (color) {
+    colorPicker.color.saturation = color.saturation;
+    updateCustomColorDisplay();
+  });
+
+  // Add this function to initialize everything
+  function initializeColorPickers() {
+    if (customColors[0]) {
+        colorPicker.color.set(customColors[0]);
+        updateSaturationSlider(colorPicker.color);
+    }
+    updateCustomColorDisplay();
+  }
+
+  // Call this function when the page loads
+  $(document).ready(function() {
+    // ... other initialization code ...
+    initializeColorPickers();
+    populatePalettes();
+    populateEffects();
   });
 });
