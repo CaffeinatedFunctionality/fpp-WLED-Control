@@ -310,7 +310,6 @@ $(document).ready(function () {
         
         SaveWledControlConfig();
         updateEffectControls(data.args);
-        updateColorDisplay();
         checkAndRunEffect();
     });
   }
@@ -764,6 +763,6 @@ $(document).ready(function () {
     // ... other initialization code ...
     initializeColorPickers();
     populatePalettes();
-    populateEffects();
+    populateEffectsList();
   });
 });
