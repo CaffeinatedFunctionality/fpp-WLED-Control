@@ -68,22 +68,7 @@ require_once("common.php");
       </div>
 
       <div id="effectsTab" class="tab-content">
-        <div class="effect-controls">
-          <div class="slider-container">
-            <h3>Effect Speed</h3>
-            <div class="slider-wrapper">
-              <i class="material-icons">timer</i>
-              <input type="range" id="effectSpeedSlider" min="0" max="255" value="100">
-            </div>
-          </div>
-          <div class="slider-container">
-            <h3>Effect Intensity</h3>
-            <div class="slider-wrapper">
-              <i class="material-icons">whatshot</i>
-              <input type="range" id="effectIntensitySlider" min="0" max="255" value="100">
-            </div>
-          </div>
-        </div>
+        <div id="effectControls"></div>
         <h3 class="effect-mode-title">Effect Mode</h3>
         <div class="search-container">
           <i class="material-icons search-icon">search</i>

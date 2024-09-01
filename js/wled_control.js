@@ -2,14 +2,13 @@ $(document).ready(function () {
   let wledControlConfig = {
     systems: [],
     models: [],
-    speed: 100,
-    intensity: 100,
     brightness: 100,
     colors: [],
     multisync: false,
     effect: "WLED - Solid Pattern",
     power: false,
     customPalettes: [],
+    effectDetails: {}
   };
 
   function GetWledControlConfig() {
@@ -78,14 +77,13 @@ $(document).ready(function () {
     wledControlConfig = {
         systems: [],
         models: [],
-        speed: 100,
-        intensity: 100,
         brightness: 100,
         colors: [],
         multisync: false,
         effect: "WLED - Solid Pattern",
         power: false,
-        customPalettes: []
+        customPalettes: [],
+        effectDetails: {}
     };
     updateUIFromConfig();
     populatePalettes();
@@ -102,6 +100,7 @@ $(document).ready(function () {
       contentType: "application/json",
       success: function () {
         console.log("WLED Control config saved successfully");
+        checkAndRunEffect();
       },
       error: function (xhr, status, error) {
         console.error("Error saving WLED Control config:", error);
@@ -115,26 +114,15 @@ $(document).ready(function () {
     json["multisyncCommand"] = wledControlConfig.multisync;
     json["multisyncHosts"] = wledControlConfig.systems.join(',');
     json["args"] = [];
-    json["args"].push(wledControlConfig.models.join(','));
-    json["args"].push("Enabled");
-    json["args"].push(wledControlConfig.effect);
-    for (var x = 1; x < 20; x++) {
-      var inp = $("#wledTblCommandEditor_arg_" + x);
-      var val = inp.val();
-      if (inp.attr('type') == 'checkbox') {
-        if (inp.is(":checked")) {
-          json["args"].push("true");
-        } else {
-          json["args"].push("false");
-        }
-      } else if (inp.attr('type') == 'number' || inp.attr('type') == 'text') {
-        json["args"].push(val);
-      } else if (Array.isArray(val)) {
-        json["args"].push(val.toString());
-      } else if (typeof val != "undefined") {
-        json["args"].push(val);
-      }
+    json["args"].push(wledControlConfig.models.join(',')); //models
+    json["args"].push("Enabled"); //multisync enabled
+    json["args"].push(wledControlConfig.effect); //effect
+    for (var key in wledControlConfig.effectDetails) {
+        json["args"].push(wledControlConfig.effectDetails[key].toString());
     }
+    wledControlConfig.colors.forEach(color => {
+        json["args"].push(color);
+    });
     return json;
   }
 
@@ -176,12 +164,12 @@ $(document).ready(function () {
 
   function togglePower() {
     wledControlConfig.power = !wledControlConfig.power;
+    SaveWledControlConfig();
     if (wledControlConfig.power) {
       RunWledEffect();
     } else {
       stopWledEffects();
     }
-    SaveWledControlConfig();
     updateUIFromConfig();
   }
 
@@ -198,12 +186,6 @@ $(document).ready(function () {
     // Update brightness slider
     $('#brightnessSlider').val(wledControlConfig.brightness);
 
-    // Update effect speed slider
-    $('#effectSpeedSlider').val(wledControlConfig.speed);
-
-    // Update effect intensity slider
-    $('#effectIntensitySlider').val(wledControlConfig.intensity);
-
     // Update model checkboxes
     $('.model-checkbox').each(function () {
       const modelId = $(this).data('model-id');
@@ -212,6 +194,8 @@ $(document).ready(function () {
 
     // Update power button
     $('#powerButton').toggleClass('active', wledControlConfig.power);
+    //todo: check status to determine if effect is running and set power button state accordingly
+    setWledEffect(wledControlConfig.effect);
   }
 
   //Color picker
@@ -223,12 +207,6 @@ $(document).ready(function () {
     wheelLightness: false,
     wheelAngle: 270,
     wheelDirection: "clockwise",
-    layout: [
-      {
-        component: iro.ui.Wheel,
-        options: {},
-      },
-    ],
   });
 
   const brightnessSlider = new iro.ColorPicker("#brightnessSlider", {
@@ -337,14 +315,108 @@ $(document).ready(function () {
     setColor();
   });
 
-  function setWledEffect(options) {
-    $.get("api/overlays/effects/" + options.effect).done(function (data) {
-      $("#EffectName").html(options.effect);
-      for (var x = 1; x < 25; x++) {
-        $("#wledTblCommandEditor_arg_" + x + "_row").remove();
-      }
-      PrintArgInputs("wledTblCommandEditor", false, data["args"], 1);
-      $("#fpp-WledEffects-Buttons").show();
+  function setWledEffect(effectName) {
+    $.get("api/overlays/effects/" + effectName).done(function(data) {
+        wledControlConfig.effect = effectName;
+        wledControlConfig.effectDetails = {};
+        wledControlConfig.colors = []; // Clear existing colors
+        
+        data.args.forEach(arg => {
+            if (arg.type === 'range') {
+                wledControlConfig.effectDetails[arg.name] = parseInt(arg.default);
+            } else if (arg.type === 'color') {
+                wledControlConfig.colors.push(arg.default);
+            } else if (arg.type === 'string' && arg.contents) {
+                wledControlConfig.effectDetails[arg.name] = arg.default || arg.contents[0];
+            }
+        });
+        
+        SaveWledControlConfig();
+        updateEffectControls(data.args);
+        updateColorDisplay();
+        checkAndRunEffect();
+    });
+  }
+
+  function updateEffectControls(effectArgs) {
+    const controlsContainer = $('#effectControls');
+    controlsContainer.empty();
+
+    // Add dropdowns first
+    effectArgs.forEach(arg => {
+        if (arg.type === 'string' && arg.contents) {
+            controlsContainer.append(createDropdown(arg));
+        }
+    });
+
+    // Always add brightness slider next
+    controlsContainer.append(createIconSlider({
+        name: 'Brightness',
+        min: 0,
+        max: 255,
+        default: wledControlConfig.brightness
+    }));
+
+    // Add other sliders
+    effectArgs.forEach(arg => {
+        if (arg.type === 'range' && arg.name !== 'Brightness') {
+            controlsContainer.append(createLabeledSlider(arg));
+        }
+    });
+
+    // Update slider and dropdown values from wledControlConfig
+    updateControlValues();
+  }
+
+  function createIconSlider(arg) {
+    return `
+        <div class="slider-container">
+            <div class="slider-wrapper">
+                <i class="material-icons">brightness_medium</i>
+                <input type="range" id="${arg.name}Slider" min="${arg.min}" max="${arg.max}" value="${arg.default}">
+            </div>
+        </div>
+    `;
+  }
+
+  function createLabeledSlider(arg) {
+    return `
+        <div class="slider-container">
+            <label for="${arg.name}Slider">${arg.name}</label>
+            <div class="slider-wrapper">
+                <input type="range" id="${arg.name}Slider" min="${arg.min}" max="${arg.max}" value="${arg.default}">
+            </div>
+        </div>
+    `;
+  }
+
+  function createDropdown(arg) {
+    let options = arg.contents.map(item => 
+        `<option value="${item}" ${item === wledControlConfig.effectDetails[arg.name] ? 'selected' : ''}>${item}</option>`
+    ).join('');
+
+    return `
+        <div class="dropdown-container">
+            <label for="${arg.name}Dropdown">${arg.name}</label>
+            <select id="${arg.name}Dropdown" class="effect-dropdown">
+                ${options}
+            </select>
+        </div>
+    `;
+  }
+
+  function updateControlValues() {
+    $('#BrightnessSlider').val(wledControlConfig.brightness);
+    
+    Object.entries(wledControlConfig.effectDetails).forEach(([name, value]) => {
+        const slider = $(`#${name}Slider`);
+        const dropdown = $(`#${name}Dropdown`);
+        
+        if (slider.length) {
+            slider.val(value);
+        } else if (dropdown.length) {
+            dropdown.val(value);
+        }
     });
   }
 
@@ -377,33 +449,36 @@ $(document).ready(function () {
     });
   }
 
-  function populateEffects() {
-    $.ajax({
-      url: "api/overlays/effects",
-      method: "GET",
-      dataType: "json",
-      success: function (data) {
-        const effectList = $("#effectList");
-        effectList.empty();
-        data.forEach((effect, index) => {
-          var effectButton = $(`
-            <button class="effect-btn" data-effect-id="${effect}">
-              <span class="effect-name">${effect}</span>
-            </button>
-          `).click(function () {
-              setWledEffect({
-                effect: v,
-              });
-            });
-          effectList.append(effectButton);
-        });
-      },
-      error: function (xhr, status, error) {
-        console.error("Error fetching models:", error);
-        $("#effectList").html(
-          "<p>Error loading effects. Please try again later.</p>"
-        );
-      }
+  function populateEffectsList(effects) {
+    const effectList = $('#effectList');
+    effectList.empty();
+
+    // Add "WLED - Solid" at the top if it exists
+    const solidIndex = effects.findIndex(effect => effect.name === "WLED - Solid");
+    if (solidIndex !== -1) {
+        const solidEffect = effects.splice(solidIndex, 1)[0];
+        addEffectButton(solidEffect, effectList);
+    }
+
+    // Add the rest of the effects
+    effects.forEach(effect => {
+        addEffectButton(effect, effectList);
+    });
+  }
+
+  function addEffectButton(effect, container) {
+    const button = $('<button>')
+        .addClass('effect-btn')
+        .attr('data-effect-id', effect.name)
+        .text(effect.name);
+    
+    container.append(button);
+  }
+
+  // This function should be called when you receive the list of effects from the server
+  function getEffectsList() {
+    $.get("api/overlays/effects").done(function(data) {
+        populateEffectsList(data);
     });
   }
 
@@ -427,8 +502,21 @@ $(document).ready(function () {
   // Palette selection
   $("#paletteList").on("click", ".palette-btn", function () {
     const paletteIndex = $(this).data("palette-index");
-    console.log(`Selected palette: ${palettes[paletteIndex].name}`);
-    // Add code to apply the selected palette
+    let selectedPalette;
+    
+    if ($(this).hasClass('custom-palette')) {
+        selectedPalette = wledControlConfig.customPalettes[paletteIndex];
+    } else {
+        selectedPalette = palettes[paletteIndex];
+    }
+    
+    wledControlConfig.colors = selectedPalette.colors.map(color => rgbToHex(color));
+    SaveWledControlConfig();
+    
+    // Update color display
+    if (wledControlConfig.colors.length > 0) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
+    }
   });
 
   // Effect selection
@@ -519,18 +607,6 @@ $(document).ready(function () {
     SaveWledControlConfig();
   });
 
-  // Update effect speed slider handler
-  $('#effectSpeedSlider').on('input', function () {
-    wledControlConfig.speed = parseInt($(this).val());
-    SaveWledControlConfig();
-  });
-
-  // Update effect intensity slider handler
-  $('#effectIntensitySlider').on('input', function () {
-    wledControlConfig.intensity = parseInt($(this).val());
-    SaveWledControlConfig();
-  });
-
   // Power button click handler
   $('#powerButton').on('click', function () {
     togglePower();
@@ -553,14 +629,18 @@ $(document).ready(function () {
 
   // Color picker change event
   colorPicker.on('color:change', function(color) {
-    // Update the main color display
     $('#colorDisplay').css('background-color', color.hexString);
-    
-    // If a custom color is selected and not saved, update it
-    if (selectedCustomColorIndex !== null && !isCustomPaletteSaved) {
-      customColors[selectedCustomColorIndex] = color.hexString;
-      updateCustomColorDisplay();
-    }
+    wledControlConfig.colors = [color.hexString];
+    SaveWledControlConfig();
+  });
+
+  // Color preset buttons
+  $('.color-preset').click(function() {
+    const color = $(this).css('background-color');
+    const hexColor = rgbToHex(color);
+    colorPicker.color.set(hexColor);
+    wledControlConfig.colors = [hexColor];
+    SaveWledControlConfig();
   });
 
   // Custom color selection
@@ -609,15 +689,77 @@ $(document).ready(function () {
     $('#customPaletteName').val('');
   });
 
-  // Color preset buttons
-  $('.color-preset').click(function() {
-    const color = $(this).css('background-color');
-    colorPicker.color.set(color);
-    isCustomPaletteSaved = false;
-    $('.custom-color').removeClass('selected');
-    selectedCustomColorIndex = null;
+  function updateColorDisplay() {
+    if (wledControlConfig.colors.length > 0) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
+    }
+  }
+
+  function rgbToHex(rgb) {
+    // If rgb is already a hex value, return it
+    if (rgb.startsWith('#')) {
+        return rgb;
+    }
+    
+    // Convert rgb(r, g, b) to hex
+    let sep = rgb.indexOf(",") > -1 ? "," : " ";
+    rgb = rgb.substr(4).split(")")[0].split(sep);
+    let r = (+rgb[0]).toString(16),
+        g = (+rgb[1]).toString(16),
+        b = (+rgb[2]).toString(16);
+
+    if (r.length == 1) r = "0" + r;
+    if (g.length == 1) g = "0" + g;
+    if (b.length == 1) b = "0" + b;
+
+    return "#" + r + g + b;
+  }
+
+  populatePalettes();
+
+  // Add event listeners for dropdowns
+  $('#effectControls').on('change', 'select.effect-dropdown', function() {
+    const name = this.id.replace('Dropdown', '');
+    wledControlConfig.effectDetails[name] = $(this).val();
+    SaveWledControlConfig();
+    checkAndRunEffect();
   });
 
-  updateCustomColorDisplay();
-  populatePalettes();
+  // Add event listeners for all sliders
+  $('#effectControls').on('input', 'input[type="range"]', function() {
+    const name = this.id.replace('Slider', '');
+    if (name === 'Brightness') {
+        wledControlConfig.brightness = parseInt($(this).val());
+    } else {
+        wledControlConfig.effectDetails[name] = parseInt($(this).val());
+    }
+    SaveWledControlConfig();
+    checkAndRunEffect();
+  });
+
+  // Call this function when selecting an effect
+  function selectEffect(effectName) {
+    setWledEffect(effectName);
+  }
+
+  function checkAndRunEffect() {
+    if (wledControlConfig.power) {
+        RunWledEffect();
+    }
+  }
+
+  // Update your effect buttons to use this function
+  $('.effect-btn').click(function() {
+    const effectName = $(this).data('effect-id');
+    selectEffect(effectName);
+  });
+
+  // Initial setup
+  $(document).ready(function() {
+    // ... existing code ...
+
+    // Set initial effect
+    getEffectsList();
+    setWledEffect(wledControlConfig.effect);
+  });
 });

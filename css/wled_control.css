@@ -306,9 +306,9 @@ input[type="range"] {
   margin-bottom: 20px;
 }
 
-.slider-container h3 {
-  text-align: center;
-  margin-bottom: 10px;
+.slider-container label {
+  display: block;
+  margin-bottom: 5px;
 }
 
 .slider-wrapper {
@@ -584,4 +584,20 @@ input[type="range"] {
 #confirmSavePalette, #cancelSavePalette {
     padding: 5px 10px;
     margin-right: 10px;
+}
+
+.dropdown-container {
+    margin-bottom: 15px;
+}
+
+.dropdown-container label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.effect-dropdown {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
 }
