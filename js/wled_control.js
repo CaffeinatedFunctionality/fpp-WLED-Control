@@ -117,6 +117,7 @@ $(document).ready(function () {
     json["args"].push(wledControlConfig.models.join(',')); //models
     json["args"].push("Enabled"); //multisync enabled
     json["args"].push(wledControlConfig.effect); //effect
+    json["args"].push(wledControlConfig.brightness.toString());
     for (var key in wledControlConfig.effectDetails) {
         json["args"].push(wledControlConfig.effectDetails[key].toString());
     }
@@ -600,26 +601,20 @@ $(document).ready(function () {
       if (customColors[i]) {
         $button.css('background-color', customColors[i]);
         $button.removeClass('empty').addClass('filled');
-        if (i > 0) {
-          $button.html(`<span>${i+1}</span><span class="remove-color">×</span>`);
-        } else {
-          $button.html(`<span>${i+1}</span>`);
-        }
       } else {
         $button.css('background-color', 'transparent');
         $button.removeClass('filled').addClass('empty');
-        $button.html('<span class="add-color">+</span>');
       }
+      $button.toggleClass('selected', i === selectedCustomColorIndex);
     }
     updateColorPickerFromCustomColors();
   }
 
   function updateColorPickerFromCustomColors() {
-    wledControlConfig.colors = customColors.filter(color => color !== null);
-    if (wledControlConfig.colors.length > 0) {
-      colorPicker.color.set(wledControlConfig.colors[0]);
-      updateSaturationSlider(colorPicker.color);
+    if (customColors[selectedCustomColorIndex]) {
+      colorPicker.color.set(customColors[selectedCustomColorIndex]);
     }
+    wledControlConfig.colors = customColors.filter(color => color !== null);
     SaveWledControlConfig();
   }
 
@@ -632,20 +627,28 @@ $(document).ready(function () {
   });
 
   // Custom color selection
-  $('.custom-color').on('click', function(e) {
+  $('.custom-color').on('click', function() {
     const index = $('.custom-color').index(this);
-    if ($(e.target).hasClass('remove-color')) {
-      customColors[index] = null;
-      updateCustomColorDisplay();
-    } else if ($(this).hasClass('empty')) {
-      customColors[index] = colorPicker.color.hexString;
-      selectedCustomColorIndex = index;
-      updateCustomColorDisplay();
-    } else {
-      selectedCustomColorIndex = index;
-      colorPicker.color.set(customColors[index]);
-      updateSaturationSlider(colorPicker.color);
+    
+    if (index > selectedCustomColorIndex) {
+      // Activate all colors up to this one
+      for (let i = selectedCustomColorIndex + 1; i <= index; i++) {
+        if (!customColors[i]) {
+          customColors[i] = colorPicker.color.hexString;
+        }
+      }
     }
+    
+    selectedCustomColorIndex = index;
+    updateCustomColorDisplay();
+    colorPicker.color.set(customColors[selectedCustomColorIndex]);
+  });
+
+  // Color preset buttons
+  $('.color-preset').click(function() {
+    const color = $(this).css('background-color');
+    const hexColor = rgbToHex(color);
+    colorPicker.color.set(hexColor);
   });
 
   // Palette selection
@@ -659,18 +662,33 @@ $(document).ready(function () {
         selectedPalette = palettes[paletteIndex];
     }
     
-    customColors = selectedPalette.colors.slice(0, 3);
+    customColors = selectedPalette.colors.slice(0, 3).map(color => rgbToHex(color));
     while (customColors.length < 3) {
         customColors.push(null);
     }
+    selectedCustomColorIndex = 0;
     updateCustomColorDisplay();
-    if (customColors[0]) {
-        colorPicker.color.set(customColors[0]);
-        updateSaturationSlider(colorPicker.color);
-    }
   });
 
-  // ... rest of your existing code ...
+  function rgbToHex(rgb) {
+    // If rgb is already a hex value, return it
+    if (rgb.startsWith('#')) {
+        return rgb;
+    }
+    
+    // Convert rgb(r, g, b) to hex
+    let sep = rgb.indexOf(",") > -1 ? "," : " ";
+    rgb = rgb.substr(4).split(")")[0].split(sep);
+    let r = (+rgb[0]).toString(16),
+        g = (+rgb[1]).toString(16),
+        b = (+rgb[2]).toString(16);
+
+    if (r.length == 1) r = "0" + r;
+    if (g.length == 1) g = "0" + g;
+    if (b.length == 1) b = "0" + b;
+
+    return "#" + r + g + b;
+  }
 
   // Add event listeners for dropdowns
   $('#effectControls').on('change', 'select.effect-dropdown', function() {

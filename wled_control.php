@@ -44,11 +44,11 @@ require_once("common.php");
             <button class="color-preset" style="background-color: green;"></button>
             <button class="color-preset random-preset">R</button>
           </div>
-          <h3>
-            <i class="material-icons palette-icon">palette</i>
-            <span>Color palette</span>
-          </h3>
           <div class="custom-colors">
+            <h3>
+              <i class="material-icons palette-icon">palette</i>
+              <span>Color palette</span>
+            </h3>
             <button class="custom-color filled" id="customColor1"><span>1</span></button>
             <button class="custom-color empty" id="customColor2"><span class="add-color">+</span></button>
             <button class="custom-color empty" id="customColor3"><span class="add-color">+</span></button>
