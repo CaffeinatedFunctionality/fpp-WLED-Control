@@ -593,6 +593,7 @@ $(document).ready(function () {
 
   let customColors = ['#ff0000', null, null]; // Default colors, only first color set
   let selectedCustomColorIndex = 0; // Always start with the first color selected
+  let isCustomPaletteModified = false;
 
   function updateCustomColorDisplay() {
     for (let i = 0; i < 3; i++) {
@@ -600,12 +601,15 @@ $(document).ready(function () {
       if (customColors[i]) {
         $button.css('background-color', customColors[i]);
         $button.removeClass('empty').addClass('filled');
+        $button.html(`<span>${i+1}</span>${i > 0 ? '<span class="remove-color">×</span>' : ''}`);
       } else {
         $button.css('background-color', 'transparent');
         $button.removeClass('filled').addClass('empty');
+        $button.html('<span class="add-color">+</span>');
       }
       $button.toggleClass('selected', i === selectedCustomColorIndex);
     }
+    $('#saveCustomPalette').toggle(isCustomPaletteModified);
     updateColorPickerFromCustomColors();
   }
 
@@ -623,24 +627,30 @@ $(document).ready(function () {
     customColors[selectedCustomColorIndex] = color.hexString;
     updateCustomColorDisplay();
     updateSaturationSlider(color);
+    isCustomPaletteModified = true;
   });
 
   // Custom color selection
-  $('.custom-color').on('click', function() {
+  $('.custom-color').on('click', function(e) {
     const index = $('.custom-color').index(this);
     
-    if (index > selectedCustomColorIndex) {
-      // Activate all colors up to this one
-      for (let i = selectedCustomColorIndex + 1; i <= index; i++) {
-        if (!customColors[i]) {
-          customColors[i] = colorPicker.color.hexString;
+    if ($(e.target).hasClass('remove-color')) {
+      customColors[index] = null;
+      isCustomPaletteModified = true;
+    } else {
+      if (index > selectedCustomColorIndex) {
+        // Activate all colors up to this one
+        for (let i = selectedCustomColorIndex + 1; i <= index; i++) {
+          if (!customColors[i]) {
+            customColors[i] = colorPicker.color.hexString;
+          }
         }
       }
+      selectedCustomColorIndex = index;
     }
     
-    selectedCustomColorIndex = index;
     updateCustomColorDisplay();
-    colorPicker.color.set(customColors[selectedCustomColorIndex]);
+    updateColorPickerFromCustomColors();
   });
 
   // Color preset buttons
@@ -648,25 +658,42 @@ $(document).ready(function () {
     const color = $(this).css('background-color');
     const hexColor = rgbToHex(color);
     colorPicker.color.set(hexColor);
+    customColors[selectedCustomColorIndex] = hexColor;
+    updateCustomColorDisplay();
+    isCustomPaletteModified = true;
   });
 
-  // Palette selection
-  $("#paletteList").on("click", ".palette-btn", function () {
-    const paletteIndex = $(this).data("palette-index");
-    let selectedPalette;
-    
-    if ($(this).hasClass('custom-palette')) {
-        selectedPalette = wledControlConfig.customPalettes[paletteIndex];
-    } else {
-        selectedPalette = palettes[paletteIndex];
+  // Save custom palette button
+  $('#saveCustomPalette').click(function() {
+    $('#customPaletteModal').show();
+  });
+
+  // Confirm save custom palette
+  $('#confirmSavePalette').click(function() {
+    const paletteName = $('#customPaletteName').val();
+    if (paletteName) {
+      const newPalette = {
+        name: paletteName,
+        colors: customColors.filter(color => color !== null)
+      };
+      
+      if (!wledControlConfig.customPalettes) {
+        wledControlConfig.customPalettes = [];
+      }
+      wledControlConfig.customPalettes.unshift(newPalette);
+      SaveWledControlConfig();
+      populatePalettes();
+      $('#customPaletteModal').hide();
+      $('#customPaletteName').val('');
+      isCustomPaletteModified = false;
+      updateCustomColorDisplay();
     }
-    
-    customColors = selectedPalette.colors.slice(0, 3).map(color => rgbToHex(color));
-    while (customColors.length < 3) {
-        customColors.push(null);
-    }
-    selectedCustomColorIndex = 0;
-    updateCustomColorDisplay();
+  });
+
+  // Cancel save custom palette
+  $('#cancelSavePalette').click(function() {
+    $('#customPaletteModal').hide();
+    $('#customPaletteName').val('');
   });
 
   function rgbToHex(rgb) {

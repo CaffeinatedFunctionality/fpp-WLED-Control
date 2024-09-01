@@ -52,6 +52,9 @@ require_once("common.php");
             <button class="custom-color filled" id="customColor1"><span>1</span></button>
             <button class="custom-color empty" id="customColor2"><span class="add-color">+</span></button>
             <button class="custom-color empty" id="customColor3"><span class="add-color">+</span></button>
+            <button id="saveCustomPalette" class="custom-color">
+              <i class="material-icons">check</i>
+            </button>
           </div>
         </div>
         <div class="palette-section">

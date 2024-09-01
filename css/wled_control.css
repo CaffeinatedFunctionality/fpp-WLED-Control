@@ -526,6 +526,10 @@ input[type="range"] {
   border: 2px solid #ccc;
   cursor: pointer;
   margin: 0 5px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .custom-color.filled {
@@ -541,8 +545,35 @@ input[type="range"] {
   background-color: transparent !important;
 }
 
+.custom-color span {
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+
+.custom-color .remove-color {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.custom-color .add-color {
+  color: #ccc;
+  font-size: 20px;
+}
+
 #saveCustomPalette {
-  background-color: #4caf50;
+  background-color: #4CAF50;
   color: white;
   display: flex;
   justify-content: center;
