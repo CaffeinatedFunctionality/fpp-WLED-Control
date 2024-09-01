@@ -45,20 +45,17 @@ require_once("common.php");
             <button class="color-preset" style="background-color: green;"></button>
             <button class="color-preset random-preset">R</button>
           </div>
-          <div class="custom-colors">
-            <button class="custom-color" id="customColor1"><span>1</span></button>
-            <button class="custom-color" id="customColor2"><span>2</span></button>
-            <button class="custom-color" id="customColor3"><span>3</span></button>
-            <button id="saveCustomPalette" class="custom-color">
-              <i class="material-icons">check</i>
-            </button>
-          </div>
-        </div>
-        <div class="palette-section">
           <h3>
             <i class="material-icons palette-icon">palette</i>
             <span>Color palette</span>
           </h3>
+          <div class="custom-colors">
+            <button class="custom-color filled" id="customColor1"><span>1</span></button>
+            <button class="custom-color empty" id="customColor2"><span class="add-color">+</span></button>
+            <button class="custom-color empty" id="customColor3"><span class="add-color">+</span></button>
+          </div>
+        </div>
+        <div class="palette-section">
           <div class="search-container">
             <i class="material-icons search-icon">search</i>
             <input type="text" placeholder="Search" class="search-input" oninput="searchPalettes(this.value)">

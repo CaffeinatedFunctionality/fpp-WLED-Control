@@ -209,20 +209,6 @@ $(document).ready(function () {
     wheelDirection: "clockwise",
   });
 
-  const brightnessSlider = new iro.ColorPicker("#brightnessSlider", {
-    width: 300,
-    color: "rgb(255, 0, 0)",
-    borderWidth: 0,
-    layout: [
-      {
-        component: iro.ui.Slider,
-        options: {
-          sliderType: "saturation",
-        },
-      },
-    ],
-  });
-
   const saturationSlider = new iro.ColorPicker("#saturationSlider", {
     width: 300,
     color: "hsl(0, 100%, 50%)",
@@ -246,7 +232,7 @@ $(document).ready(function () {
     }
 
     colorPicker.color.rgb = rgb;
-    brightnessSlider.color.hsv = hsv;
+    updateSaturationSlider(colorPicker.color);
 
     // Here you would typically send the color to your device
     console.log("Color set to:", rgb, hsv);
@@ -280,12 +266,10 @@ $(document).ready(function () {
   });
 
   colorPicker.on("color:change", function (color) {
-    updateSliders();
-    brightnessSlider.color.hsv = {
-      h: color.hue,
-      s: color.saturation,
-      v: color.value,
-    };
+    $('#colorDisplay').css('background-color', color.hexString);
+    wledControlConfig.colors = [color.hexString];
+    updateSaturationSlider(color);
+    SaveWledControlConfig();
   });
 
   brightnessSlider.on("color:change", function (color) {
@@ -312,7 +296,9 @@ $(document).ready(function () {
       const color = $(this).css("background-color");
       colorPicker.color.set(color);
     }
-    setColor();
+    updateSaturationSlider(colorPicker.color);
+    wledControlConfig.colors = [colorPicker.color.hexString];
+    SaveWledControlConfig();
   });
 
   function setWledEffect(effectName) {
@@ -516,6 +502,7 @@ $(document).ready(function () {
     // Update color display
     if (wledControlConfig.colors.length > 0) {
         colorPicker.color.set(wledControlConfig.colors[0]);
+        updateSaturationSlider(colorPicker.color);
     }
   });
 
@@ -617,105 +604,81 @@ $(document).ready(function () {
 
   // ... rest of your existing code ...
 
-  let customColors = ['#ff0000', '#00ff00', '#0000ff']; // Default colors
-  let selectedCustomColorIndex = null;
-  let isCustomPaletteSaved = false;
+  let customColors = ['#ff0000', null, null]; // Default colors, only first color set
+  let selectedCustomColorIndex = 0; // Always start with the first color selected
 
   function updateCustomColorDisplay() {
     for (let i = 0; i < 3; i++) {
-      $(`#customColor${i+1}`).css('background-color', customColors[i]);
+      const $button = $(`#customColor${i+1}`);
+      if (customColors[i]) {
+        $button.css('background-color', customColors[i]);
+        $button.removeClass('empty').addClass('filled');
+        if (i > 0) {
+          $button.html(`<span>${i+1}</span><span class="remove-color">×</span>`);
+        } else {
+          $button.html(`<span>${i+1}</span>`);
+        }
+      } else {
+        $button.css('background-color', 'transparent');
+        $button.removeClass('filled').addClass('empty');
+        $button.html('<span class="add-color">+</span>');
+      }
     }
+    updateColorPickerFromCustomColors();
+  }
+
+  function updateColorPickerFromCustomColors() {
+    wledControlConfig.colors = customColors.filter(color => color !== null);
+    if (wledControlConfig.colors.length > 0) {
+      colorPicker.color.set(wledControlConfig.colors[0]);
+      updateSaturationSlider(colorPicker.color);
+    }
+    SaveWledControlConfig();
   }
 
   // Color picker change event
   colorPicker.on('color:change', function(color) {
     $('#colorDisplay').css('background-color', color.hexString);
-    wledControlConfig.colors = [color.hexString];
-    SaveWledControlConfig();
-  });
-
-  // Color preset buttons
-  $('.color-preset').click(function() {
-    const color = $(this).css('background-color');
-    const hexColor = rgbToHex(color);
-    colorPicker.color.set(hexColor);
-    wledControlConfig.colors = [hexColor];
-    SaveWledControlConfig();
+    customColors[selectedCustomColorIndex] = color.hexString;
+    updateCustomColorDisplay();
+    updateSaturationSlider(color);
   });
 
   // Custom color selection
-  $('.custom-color').click(function() {
-    if (this.id === 'saveCustomPalette') return;
-    
+  $('.custom-color').on('click', function(e) {
     const index = $('.custom-color').index(this);
-    $('.custom-color').removeClass('selected');
-    $(this).addClass('selected');
-    selectedCustomColorIndex = index;
-    
-    if (!isCustomPaletteSaved) {
+    if ($(e.target).hasClass('remove-color')) {
+      customColors[index] = null;
+      updateCustomColorDisplay();
+    } else if ($(this).hasClass('empty')) {
+      customColors[index] = colorPicker.color.hexString;
+      selectedCustomColorIndex = index;
+      updateCustomColorDisplay();
+    } else {
+      selectedCustomColorIndex = index;
       colorPicker.color.set(customColors[index]);
     }
   });
 
-  // Save custom palette button
-  $('#saveCustomPalette').click(function() {
-    $('#customPaletteModal').show();
-  });
-
-  // Confirm save custom palette
-  $('#confirmSavePalette').click(function() {
-    const paletteName = $('#customPaletteName').val();
-    if (paletteName) {
-      const newPalette = {
-        name: paletteName,
-        colors: customColors.filter(color => color !== null)
-      };
-      
-      if (!wledControlConfig.customPalettes) {
-        wledControlConfig.customPalettes = [];
-      }
-      wledControlConfig.customPalettes.unshift(newPalette);
-      SaveWledControlConfig();
-      populatePalettes();
-      $('#customPaletteModal').hide();
-      $('#customPaletteName').val('');
-      isCustomPaletteSaved = true;
-    }
-  });
-
-  // Cancel save custom palette
-  $('#cancelSavePalette').click(function() {
-    $('#customPaletteModal').hide();
-    $('#customPaletteName').val('');
-  });
-
-  function updateColorDisplay() {
-    if (wledControlConfig.colors.length > 0) {
-        colorPicker.color.set(wledControlConfig.colors[0]);
-    }
-  }
-
-  function rgbToHex(rgb) {
-    // If rgb is already a hex value, return it
-    if (rgb.startsWith('#')) {
-        return rgb;
+  // Palette selection
+  $("#paletteList").on("click", ".palette-btn", function () {
+    const paletteIndex = $(this).data("palette-index");
+    let selectedPalette;
+    
+    if ($(this).hasClass('custom-palette')) {
+        selectedPalette = wledControlConfig.customPalettes[paletteIndex];
+    } else {
+        selectedPalette = palettes[paletteIndex];
     }
     
-    // Convert rgb(r, g, b) to hex
-    let sep = rgb.indexOf(",") > -1 ? "," : " ";
-    rgb = rgb.substr(4).split(")")[0].split(sep);
-    let r = (+rgb[0]).toString(16),
-        g = (+rgb[1]).toString(16),
-        b = (+rgb[2]).toString(16);
+    customColors = selectedPalette.colors.slice(0, 3);
+    while (customColors.length < 3) {
+        customColors.push(null);
+    }
+    updateCustomColorDisplay();
+  });
 
-    if (r.length == 1) r = "0" + r;
-    if (g.length == 1) g = "0" + g;
-    if (b.length == 1) b = "0" + b;
-
-    return "#" + r + g + b;
-  }
-
-  populatePalettes();
+  // ... rest of your existing code ...
 
   // Add event listeners for dropdowns
   $('#effectControls').on('change', 'select.effect-dropdown', function() {
@@ -739,6 +702,8 @@ $(document).ready(function () {
 
   // Call this function when selecting an effect
   function selectEffect(effectName) {
+    $('.effect-btn').removeClass('active');
+    $(`.effect-btn[data-effect-id="${effectName}"]`).addClass('active');
     setWledEffect(effectName);
   }
 
@@ -761,5 +726,6 @@ $(document).ready(function () {
     // Set initial effect
     getEffectsList();
     setWledEffect(wledControlConfig.effect);
+    updateCustomColorDisplay();
   });
 });
