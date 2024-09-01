@@ -272,20 +272,10 @@ $(document).ready(function () {
     SaveWledControlConfig();
   });
 
-  brightnessSlider.on("color:change", function (color) {
-    colorPicker.color.value = color.value;
-    setColor();
-  });
-
   saturationSlider.on("color:change", function (color) {
     colorPicker.color.saturation = color.saturation;
     setColor();
   });
-
-  function updateSliders() {
-    brightnessSlider.color.hue = colorPicker.color.hue;
-    brightnessSlider.color.saturation = colorPicker.color.saturation;
-  }
 
   $(".color-preset").click(function () {
     if ($(this).hasClass("random-preset")) {
