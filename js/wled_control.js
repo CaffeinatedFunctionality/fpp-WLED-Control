@@ -578,10 +578,13 @@ $(document).ready(function () {
   let isCustomPaletteModified = false;
 
   // Custom color selection
-  $('.custom-color').on('click', function() {
+  $('.custom-color').on('click', function(e) {
     const index = $('.custom-color').index(this);
     selectedColorIndex = index;
-    if (wledControlConfig.colors[index]) {
+    if ($(e.target).hasClass('remove-color')) {
+      wledControlConfig.colors[index] = null;
+      updateCustomColorDisplay();
+    } else if (wledControlConfig.colors[index]) {
         colorPicker.color.set(wledControlConfig.colors[index]);
     } else {
         // Add a new color
