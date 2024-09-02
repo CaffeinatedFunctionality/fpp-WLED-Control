@@ -278,19 +278,26 @@ input[type="range"] {
 }
 
 .effect-btn {
-  display: flex;
-  align-items: center;
-  background-color: #333;
+  background-color: var(--button-color);
+  color: var(--text-color);
   border: none;
-  border-radius: 20px;
-  overflow: hidden;
+  padding: 10px 15px;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 8px;
-  margin-bottom: 8px;
-  width: 100%;
-  text-align: left;
-  color: #fff;
-  box-sizing: border-box;
+  transition: background-color 0.3s;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  text-align: center; /* Ensure text is centered */
+  width: 100%; /* Ensure the button takes full width */
+}
+
+.effect-btn:hover {
+  background-color: var(--button-hover-color);
+}
+
+.effect-btn.active {
+  background-color: var(--button-active-color);
 }
 
 .effect-name {
@@ -360,7 +367,7 @@ input[type="text"] {
 }
 
 input[type="text"]::placeholder {
-  color: #fff;
+  color: #838282;
 }
 
 .search-icon {

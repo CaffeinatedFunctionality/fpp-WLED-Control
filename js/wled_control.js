@@ -255,32 +255,6 @@ $(document).ready(function () {
     SaveWledControlConfig();
   });
 
-  // Color picker click event
-  $('#colorPicker').on('click', function(e) {
-    const wheel = colorPicker.ui[0];
-    const rect = wheel.el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = wheel.width / 2;
-    const centerY = wheel.height / 2;
-    const dx = x - centerX;
-    const dy = y - centerY;
-
-    const radius = Math.sqrt(dx * dx + dy * dy);
-    const maxRadius = wheel.width / 2;
-
-    let hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
-    hue = (hue + 90) % 360; // Adjust for wheel angle
-    const saturation = Math.min(100, (radius / maxRadius) * 100);
-
-    colorPicker.color.hsv = {
-      h: hue,
-      s: saturation,
-      v: colorPicker.color.value,
-    };
-  });
-
   $(".color-preset").click(function () {
     if ($(this).hasClass("random-preset")) {
       const randomColor =
