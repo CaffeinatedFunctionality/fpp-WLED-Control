@@ -256,35 +256,29 @@ $(document).ready(function () {
   });
 
   // Color picker click event
-  $('#colorPicker').on('mousedown', function(e) {
-    const rect = this.getBoundingClientRect();
+  $('#colorPicker').on('click', function(e) {
+    const wheel = colorPicker.ui[0];
+    const rect = wheel.el.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Try to get the wheel from the colorPicker UI
-    let wheel;
-    if (colorPicker.ui && Array.isArray(colorPicker.ui)) {
-        wheel = colorPicker.ui.find(component => component.type === 'wheel');
-    }
+    const centerX = wheel.width / 2;
+    const centerY = wheel.height / 2;
+    const dx = x - centerX;
+    const dy = y - centerY;
 
-    if (wheel) {
-        const hsv = wheel.input(x, y);
-        if (hsv) {
-            colorPicker.color.hsv = hsv;
-        }
-    } else {
-        // Fallback: calculate HSV based on click position
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const dx = x - centerX;
-        const dy = y - centerY;
-        const radius = Math.min(rect.width, rect.height) / 2;
+    const radius = Math.sqrt(dx * dx + dy * dy);
+    const maxRadius = wheel.width / 2;
 
-        const hue = (Math.atan2(dy, dx) + Math.PI) / (Math.PI * 2);
-        const saturation = Math.min(1, Math.sqrt(dx * dx + dy * dy) / radius);
+    let hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
+    hue = (hue + 90) % 360; // Adjust for wheel angle
+    const saturation = Math.min(100, (radius / maxRadius) * 100);
 
-        colorPicker.color.hsv = { h: hue * 360, s: saturation * 100, v: colorPicker.color.value };
-    }
+    colorPicker.color.hsv = {
+      h: hue,
+      s: saturation,
+      v: colorPicker.color.value,
+    };
   });
 
   $(".color-preset").click(function () {
@@ -297,7 +291,7 @@ $(document).ready(function () {
       colorPicker.color.set(color);
     }
     updateSaturationSlider(colorPicker.color);
-    wledControlConfig.colors = [colorPicker.color.hexString];
+    wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
     SaveWledControlConfig();
   });
 
