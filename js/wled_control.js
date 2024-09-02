@@ -241,43 +241,45 @@ $(document).ready(function () {
     console.log("Color set to:", rgb, hsv);
   }
 
-  // Custom click handler for the color wheel
-  $("#colorPicker").on("click", function (e) {
-    const wheel = colorPicker.ui[0];
-    const rect = wheel.el.getBoundingClientRect();
+  // Color picker change event
+  colorPicker.on('color:change', function(color) {
+    $('#colorDisplay').css('background-color', color.hexString);
+    customColors[selectedCustomColorIndex] = color.hexString;
+    updateCustomColorDisplay();
+    updateSaturationSlider(color);
+    isCustomPaletteModified = true;
+  });
+
+  // Color picker click event
+  $('#colorPicker').on('click', function(e) {
+    const rect = this.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const centerX = wheel.width / 2;
-    const centerY = wheel.height / 2;
-    const dx = x - centerX;
-    const dy = y - centerY;
+    // Try to get the wheel from the colorPicker UI
+    let wheel;
+    if (colorPicker.ui && Array.isArray(colorPicker.ui)) {
+        wheel = colorPicker.ui.find(component => component.type === 'wheel');
+    }
 
-    const radius = Math.sqrt(dx * dx + dy * dy);
-    const maxRadius = wheel.width / 2;
+    if (wheel) {
+        const hsv = wheel.input(x, y);
+        if (hsv) {
+            colorPicker.color.hsv = hsv;
+        }
+    } else {
+        // Fallback: calculate HSV based on click position
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const radius = Math.min(rect.width, rect.height) / 2;
 
-    let hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
-    hue = (hue + 90) % 360; // Adjust for wheel angle
-    const saturation = Math.min(100, (radius / maxRadius) * 100);
+        const hue = (Math.atan2(dy, dx) + Math.PI) / (Math.PI * 2);
+        const saturation = Math.min(1, Math.sqrt(dx * dx + dy * dy) / radius);
 
-    colorPicker.color.hsv = {
-      h: hue,
-      s: saturation,
-      v: colorPicker.color.value,
-    };
-    setColor();
-  });
-
-  colorPicker.on("color:change", function (color) {
-    $('#colorDisplay').css('background-color', color.hexString);
-    wledControlConfig.colors = [color.hexString];
-    updateSaturationSlider(color);
-    SaveWledControlConfig();
-  });
-
-  saturationSlider.on("color:change", function (color) {
-    colorPicker.color.saturation = color.saturation;
-    setColor();
+        colorPicker.color.hsv = { h: hue * 360, s: saturation * 100, v: colorPicker.color.value };
+    }
   });
 
   $(".color-preset").click(function () {
@@ -432,7 +434,7 @@ $(document).ready(function () {
     effectList.empty();
 
     // Add "WLED - Solid" at the top if it exists
-    const solidIndex = effects.findIndex(effect => effect.name === "WLED - Solid");
+    const solidIndex = effects.findIndex(effect => effect === "WLED - Solid Pattern");
     if (solidIndex !== -1) {
         const solidEffect = effects.splice(solidIndex, 1)[0];
         addEffectButton(solidEffect, effectList);
@@ -447,8 +449,8 @@ $(document).ready(function () {
   function addEffectButton(effect, container) {
     const button = $('<button>')
         .addClass('effect-btn')
-        .attr('data-effect-id', effect.name)
-        .text(effect.name);
+        .attr('data-effect-id', effect)
+        .text(effect);
     
     container.append(button);
   }
@@ -625,15 +627,6 @@ $(document).ready(function () {
     wledControlConfig.colors = customColors.filter(color => color !== null);
     SaveWledControlConfig();
   }
-
-  // Color picker change event
-  colorPicker.on('color:change', function(color) {
-    $('#colorDisplay').css('background-color', color.hexString);
-    customColors[selectedCustomColorIndex] = color.hexString;
-    updateCustomColorDisplay();
-    updateSaturationSlider(color);
-    isCustomPaletteModified = true;
-  });
 
   // Custom color selection
   $('.custom-color').on('click', function(e) {
