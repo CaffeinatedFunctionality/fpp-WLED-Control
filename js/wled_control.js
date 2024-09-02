@@ -92,21 +92,23 @@ $(document).ready(function () {
   }
 
   function SaveWledControlConfig() {
+    // Filter out null values before saving
+    wledControlConfig.colors = wledControlConfig.colors.filter(color => color !== null);
     var data = JSON.stringify(wledControlConfig);
     $.ajax({
-      type: "POST",
-      url: "api/configfile/plugin.fpp-WLED-Control.json",
-      dataType: "json",
-      data: data,
-      processData: false,
-      contentType: "application/json",
-      success: function () {
-        console.log("WLED Control config saved successfully");
-        checkAndRunEffect();
-      },
-      error: function (xhr, status, error) {
-        console.error("Error saving WLED Control config:", error);
-      },
+        type: "POST",
+        url: "api/configfile/plugin.fpp-WLED-Control.json",
+        dataType: "json",
+        data: data,
+        processData: false,
+        contentType: "application/json",
+        success: function () {
+            console.log("WLED Control config saved successfully");
+            checkAndRunEffect();
+        },
+        error: function (xhr, status, error) {
+            console.error("Error saving WLED Control config:", error);
+        },
     });
   }
 
@@ -241,17 +243,35 @@ $(document).ready(function () {
     console.log("Color set to:", rgb, hsv);
   }
 
+  let selectedColorIndex = 0; // Track which color is currently selected
+
+  function updateCustomColorDisplay() {
+    for (let i = 0; i < 3; i++) {
+      const $button = $(`#customColor${i+1}`);
+      if (wledControlConfig.colors[i]) {
+        $button.css('background-color', wledControlConfig.colors[i]);
+        $button.removeClass('empty').addClass('filled');
+        $button.html(`<span>${i+1}</span>`);
+      } else {
+        $button.css('background-color', 'transparent');
+        $button.removeClass('filled').addClass('empty');
+        $button.html('<span class="add-color">+</span>');
+      }
+      $button.toggleClass('selected', i === selectedColorIndex);
+    }
+  }
+
   // Color picker change event
   colorPicker.on('color:change', function(color) {
     $('#colorDisplay').css('background-color', color.hexString);
-    customColors[selectedCustomColorIndex] = color.hexString;
+    wledControlConfig.colors[selectedColorIndex] = color.hexString;
     updateCustomColorDisplay();
     updateSaturationSlider(color);
-    isCustomPaletteModified = true;
+    SaveWledControlConfig();
   });
 
   // Color picker click event
-  $('#colorPicker').on('click', function(e) {
+  $('#colorPicker').on('mousedown', function(e) {
     const rect = this.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -314,6 +334,7 @@ $(document).ready(function () {
         
         SaveWledControlConfig();
         updateEffectControls(data.args);
+        updateCustomColorDisplay();
         checkAndRunEffect();
     });
   }
@@ -487,14 +508,17 @@ $(document).ready(function () {
         selectedPalette = palettes[paletteIndex];
     }
     
-    wledControlConfig.colors = selectedPalette.colors.map(color => rgbToHex(color));
-    SaveWledControlConfig();
-    
-    // Update color display
-    if (wledControlConfig.colors.length > 0) {
+    wledControlConfig.colors = selectedPalette.colors.slice(0, 3).map(color => rgbToHex(color));
+    while (wledControlConfig.colors.length < 3) {
+        wledControlConfig.colors.push(null);
+    }
+    selectedColorIndex = 0;
+    updateCustomColorDisplay();
+    if (wledControlConfig.colors[0]) {
         colorPicker.color.set(wledControlConfig.colors[0]);
         updateSaturationSlider(colorPicker.color);
     }
+    SaveWledControlConfig();
   });
 
   // Effect selection
@@ -598,57 +622,21 @@ $(document).ready(function () {
 
   // ... rest of your existing code ...
 
-  let customColors = ['#ff0000', null, null]; // Default colors, only first color set
-  let selectedCustomColorIndex = 0; // Always start with the first color selected
   let isCustomPaletteModified = false;
 
-  function updateCustomColorDisplay() {
-    for (let i = 0; i < 3; i++) {
-      const $button = $(`#customColor${i+1}`);
-      if (customColors[i]) {
-        $button.css('background-color', customColors[i]);
-        $button.removeClass('empty').addClass('filled');
-        $button.html(`<span>${i+1}</span>${i > 0 ? '<span class="remove-color">×</span>' : ''}`);
-      } else {
-        $button.css('background-color', 'transparent');
-        $button.removeClass('filled').addClass('empty');
-        $button.html('<span class="add-color">+</span>');
-      }
-      $button.toggleClass('selected', i === selectedCustomColorIndex);
-    }
-    $('#saveCustomPalette').toggle(isCustomPaletteModified);
-    updateColorPickerFromCustomColors();
-  }
-
-  function updateColorPickerFromCustomColors() {
-    if (customColors[selectedCustomColorIndex]) {
-      colorPicker.color.set(customColors[selectedCustomColorIndex]);
-    }
-    wledControlConfig.colors = customColors.filter(color => color !== null);
-    SaveWledControlConfig();
-  }
-
   // Custom color selection
-  $('.custom-color').on('click', function(e) {
+  $('.custom-color').on('click', function() {
     const index = $('.custom-color').index(this);
-    
-    if ($(e.target).hasClass('remove-color')) {
-      customColors[index] = null;
-      isCustomPaletteModified = true;
+    if (index < wledControlConfig.colors.length) {
+        selectedColorIndex = index;
+        colorPicker.color.set(wledControlConfig.colors[index]);
     } else {
-      if (index > selectedCustomColorIndex) {
-        // Activate all colors up to this one
-        for (let i = selectedCustomColorIndex + 1; i <= index; i++) {
-          if (!customColors[i]) {
-            customColors[i] = colorPicker.color.hexString;
-          }
-        }
-      }
-      selectedCustomColorIndex = index;
+        // Add a new color
+        wledControlConfig.colors.push(colorPicker.color.hexString);
+        selectedColorIndex = wledControlConfig.colors.length - 1;
     }
-    
     updateCustomColorDisplay();
-    updateColorPickerFromCustomColors();
+    SaveWledControlConfig();
   });
 
   // Color preset buttons
@@ -656,9 +644,9 @@ $(document).ready(function () {
     const color = $(this).css('background-color');
     const hexColor = rgbToHex(color);
     colorPicker.color.set(hexColor);
-    customColors[selectedCustomColorIndex] = hexColor;
+    wledControlConfig.colors[selectedColorIndex] = hexColor;
     updateCustomColorDisplay();
-    isCustomPaletteModified = true;
+    SaveWledControlConfig();
   });
 
   // Save custom palette button
@@ -672,7 +660,7 @@ $(document).ready(function () {
     if (paletteName) {
       const newPalette = {
         name: paletteName,
-        colors: customColors.filter(color => color !== null)
+        colors: wledControlConfig.colors.filter(color => color !== null)
       };
       
       if (!wledControlConfig.customPalettes) {
@@ -742,8 +730,8 @@ $(document).ready(function () {
 
   // Add this function to initialize everything
   function initializeColorPickers() {
-    if (customColors[0]) {
-        colorPicker.color.set(customColors[0]);
+    if (wledControlConfig.colors[0]) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
         updateSaturationSlider(colorPicker.color);
     }
     updateCustomColorDisplay();
@@ -770,8 +758,8 @@ $(document).ready(function () {
 
   // Add this function to initialize everything
   function initializeColorPickers() {
-    if (customColors[0]) {
-        colorPicker.color.set(customColors[0]);
+    if (wledControlConfig.colors[0]) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
         updateSaturationSlider(colorPicker.color);
     }
     updateCustomColorDisplay();
