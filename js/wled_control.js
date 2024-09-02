@@ -227,22 +227,7 @@ $(document).ready(function () {
       },
     ],
   });
-
-  function setColor(rgb, hsv) {
-    if (rgb === undefined) {
-      rgb = colorPicker.color.rgb;
-    }
-    if (hsv === undefined) {
-      hsv = colorPicker.color.hsv;
-    }
-
-    colorPicker.color.rgb = rgb;
-    updateSaturationSlider(colorPicker.color);
-
-    // Here you would typically send the color to your device
-    console.log("Color set to:", rgb, hsv);
-  }
-
+  
   let selectedColorIndex = 0; // Track which color is currently selected
 
   function updateCustomColorDisplay() {
@@ -251,7 +236,7 @@ $(document).ready(function () {
       if (wledControlConfig.colors[i]) {
         $button.css('background-color', wledControlConfig.colors[i]);
         $button.removeClass('empty').addClass('filled');
-        $button.html(`<span>${i+1}</span>`);
+        $button.html(`<span>${i+1}</span>${i > 0 ? '<span class="remove-color">×</span>' : ''}`);
       } else {
         $button.css('background-color', 'transparent');
         $button.removeClass('filled').addClass('empty');
@@ -627,13 +612,12 @@ $(document).ready(function () {
   // Custom color selection
   $('.custom-color').on('click', function() {
     const index = $('.custom-color').index(this);
-    if (index < wledControlConfig.colors.length) {
-        selectedColorIndex = index;
+    selectedColorIndex = index;
+    if (wledControlConfig.colors[index]) {
         colorPicker.color.set(wledControlConfig.colors[index]);
     } else {
         // Add a new color
-        wledControlConfig.colors.push(colorPicker.color.hexString);
-        selectedColorIndex = wledControlConfig.colors.length - 1;
+        wledControlConfig.colors[index] = colorPicker.color.hexString;
     }
     updateCustomColorDisplay();
     SaveWledControlConfig();
