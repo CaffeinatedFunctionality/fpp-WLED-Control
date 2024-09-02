@@ -70,6 +70,7 @@ $(document).ready(function () {
     }
     updateUIFromConfig();
     populatePalettes();
+    getEffectsList();
   }
 
   function useDefaultConfig() {
@@ -87,6 +88,7 @@ $(document).ready(function () {
     };
     updateUIFromConfig();
     populatePalettes();
+    getEffectsList();
   }
 
   function SaveWledControlConfig() {
@@ -496,11 +498,14 @@ $(document).ready(function () {
   // Effect selection
   $("#effectList").on("click", ".effect-btn", function () {
     const effectId = $(this).data("effect-id");
-    console.log(
-      `Selected effect: ${effects.find((e) => e.id === effectId).name}`
-    );
-    // Add code to apply the selected effect
+    selectEffect(effectId);
   });
+
+  function selectEffect(effectName) {
+    $('.effect-btn').removeClass('active');
+    $(`.effect-btn[data-effect-id="${effectName}"]`).addClass('active');
+    setWledEffect(effectName);
+  }
 
   // Search functions
   window.searchPalettes = function (query) {
@@ -736,33 +741,27 @@ $(document).ready(function () {
     checkAndRunEffect();
   });
 
-  // Call this function when selecting an effect
-  function selectEffect(effectName) {
-    $('.effect-btn').removeClass('active');
-    $(`.effect-btn[data-effect-id="${effectName}"]`).addClass('active');
-    setWledEffect(effectName);
-  }
-
   function checkAndRunEffect() {
     if (wledControlConfig.power) {
         RunWledEffect();
     }
   }
 
-  // Update your effect buttons to use this function
-  $('.effect-btn').click(function() {
-    const effectName = $(this).data('effect-id');
-    selectEffect(effectName);
-  });
-
-  // Initial setup
-  $(document).ready(function() {
-    // ... existing code ...
-
-    // Set initial effect
-    getEffectsList();
-    setWledEffect(wledControlConfig.effect);
+  // Add this function to initialize everything
+  function initializeColorPickers() {
+    if (customColors[0]) {
+        colorPicker.color.set(customColors[0]);
+        updateSaturationSlider(colorPicker.color);
+    }
     updateCustomColorDisplay();
+  }
+
+  // Call this function when the page loads
+  $(document).ready(function() {
+    // ... other initialization code ...
+    initializeColorPickers();
+    populatePalettes();
+    getEffectsList();
   });
 
   function updateSaturationSlider(color) {
@@ -790,6 +789,6 @@ $(document).ready(function () {
     // ... other initialization code ...
     initializeColorPickers();
     populatePalettes();
-    populateEffectsList();
+    getEffectsList();
   });
 });
