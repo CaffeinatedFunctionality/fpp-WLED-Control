@@ -114,18 +114,17 @@ $(document).ready(function () {
 
   function CreateEffectJSON() {
     var json = {};
-    json["command"] = "Overlay Model Effect";
+    json["command"] = wledControlConfig.effect === "Solid" ? "Overlay Model Effect" : "Overlay Model Fill";
     json["multisyncCommand"] = wledControlConfig.multisync;
     json["multisyncHosts"] = wledControlConfig.systems.join(',');
     json["args"] = [];
     json["args"].push(wledControlConfig.models.join(',')); //models
-    json["args"].push("Enabled"); //multisync enabled
+    json["args"].push("Enabled"); //state
     json["args"].push(wledControlConfig.effect); //effect
-    json["args"].push(wledControlConfig.brightness.toString());
     for (var key in wledControlConfig.effectDetails) {
         json["args"].push(wledControlConfig.effectDetails[key].toString());
     }
-    wledControlConfig.colors.forEach(color => {
+    wledControlConfig.effect === "Solid" ? json["args"].push(wledControlConfig.colors[0]) : wledControlConfig.colors.forEach(color => {
         json["args"].push(color);
     });
     return json;
@@ -270,6 +269,13 @@ $(document).ready(function () {
   });
 
   function setWledEffect(effectName) {
+    if(effectName === "Solid") {
+      wledControlConfig.effect = "Solid";
+      SaveWledControlConfig();
+      updateEffectControls([]);
+      updateCustomColorDisplay();
+      checkAndRunEffect();
+    } else {
     $.get("api/overlays/effects/" + effectName).done(function(data) {
         wledControlConfig.effect = effectName;
         wledControlConfig.effectDetails = {};
@@ -407,12 +413,7 @@ $(document).ready(function () {
     const effectList = $('#effectList');
     effectList.empty();
 
-    // Add "WLED - Solid" at the top if it exists
-    const solidIndex = effects.findIndex(effect => effect === "WLED - Solid Pattern");
-    if (solidIndex !== -1) {
-        const solidEffect = effects.splice(solidIndex, 1)[0];
-        addEffectButton(solidEffect, effectList);
-    }
+    addEffectButton("Solid", effectList);
 
     // Add the rest of the effects
     effects.forEach(effect => {
