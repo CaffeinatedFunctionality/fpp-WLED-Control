@@ -115,7 +115,7 @@ $(document).ready(function () {
   function CreateEffectJSON () {
     var json = {}
     json['command'] =
-      wledControlConfig.effect === 'Solid'
+      wledControlConfig.effect !== 'Solid'
         ? 'Overlay Model Effect'
         : 'Overlay Model Fill'
     json['multisyncCommand'] = wledControlConfig.multisync
