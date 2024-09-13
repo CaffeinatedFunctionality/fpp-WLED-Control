@@ -835,13 +835,22 @@ $(document).ready(function () {
   }
 
   function updatePaletteDropdown() {
-    const paletteDropdown = $('#PaletteDropdown');
+    const paletteDropdown = $('#paletteDropdown');
     if (paletteDropdown.length) {
       paletteDropdown.empty();
       specialPalettes.concat(wledControlConfig.customPalettes, existingPalettes).forEach((palette) => {
         paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
       });
       paletteDropdown.val(wledControlConfig.selectedPalette);
+      
+      // Remove any existing event listener
+      paletteDropdown.off('change');
+      
+      // Add the new event listener
+      paletteDropdown.on('change', function() {
+        const selectedPaletteName = $(this).val();
+        updateSelectedPalette(selectedPaletteName);
+      });
     }
   
     $('.palette-btn').removeClass('selected');
@@ -876,11 +885,6 @@ $(document).ready(function () {
            wledControlConfig.customPalettes.find(p => p.name === name) ||
            existingPalettes.find(p => p.name === name);
   }
-
-  $('#PaletteDropdown').on('change', function() {
-    const selectedPaletteName = $(this).val();
-    updateSelectedPalette(selectedPaletteName);
-  });
 
   initializeColorPickers()
   populatePalettes()
