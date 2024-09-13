@@ -22,7 +22,7 @@ require_once("common.php");
         <i class="material-icons">brightness_medium</i>
         <input type="range" id="brightnessSlider" min="0" max="255" value="128">
       </div>
-      <button id="settingsButton">
+      <button id="settingsButton" onclick="openSettings()">
         <i class="material-icons">settings</i>
         <span>Settings</span>
       </button>
@@ -87,7 +87,8 @@ require_once("common.php");
       </div>
 
       <div id="scheduleTab" class="tab-content">
-        <!-- Content for Favorites/Schedule tab -->
+        <h2>Schedule</h2>
+        <p>Coming Soon</p>
       </div>
     </div>
 
@@ -118,6 +119,14 @@ require_once("common.php");
         <input type="text" id="customPaletteName" placeholder="Enter palette name">
         <button id="confirmSavePalette">Save</button>
         <button id="cancelSavePalette">Cancel</button>
+      </div>
+    </div>
+
+    <div id="settingsOverlay" class="overlay">
+      <div class="overlay-content">
+          <span class="close-btn" onclick="closeSettings()">&times;</span>
+          <h2>Settings</h2>
+          <p>Coming Soon</p>
       </div>
     </div>
   </div>

@@ -876,3 +876,11 @@ $(document).ready(function () {
   
   GetWledControlConfig()
 })
+
+function openSettings() {
+  document.getElementById("settingsOverlay").style.display = "block";
+}
+
+function closeSettings() {
+  document.getElementById("settingsOverlay").style.display = "none";
+}
