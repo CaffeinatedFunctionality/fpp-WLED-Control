@@ -897,9 +897,5 @@ $(document).ready(function () {
     updateCustomColorDisplay();
     updatePaletteDropdown();
     updateUIFromConfig()
-    populatePalettes()
-    getEffectsList()
-    initializeColorPickers();
-    updateCustomColorDisplay();
   });
 })
