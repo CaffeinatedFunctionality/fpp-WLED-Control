@@ -279,12 +279,12 @@ $(document).ready(function () {
       $button.toggleClass('selected', i === selectedColorIndex)
     }
     if (!$('.palette-btn.selected').length) {
-      unselectPalette();
+      selectColorsOnlyPalette();
     }
   }
 
   colorPicker.on('color:change', function (color) {
-    unselectPalette();
+    selectColorsOnlyPalette();
     $('#colorDisplay').css('background-color', color.hexString)
     wledControlConfig.colors[selectedColorIndex] = color.hexString
     updateCustomColorDisplay()
@@ -293,7 +293,7 @@ $(document).ready(function () {
   })
 
   $('.color-preset').click(function () {
-    unselectPalette();
+    selectColorsOnlyPalette();
     if ($(this).hasClass('random-preset')) {
       const randomColor =
         '#' + Math.floor(Math.random() * 16777215).toString(16)
@@ -577,7 +577,7 @@ $(document).ready(function () {
     // Update the selected palette to "Colors Only" if it's not already a special palette
     const currentPalette = $('.palette-btn.selected .palette-name').text();
     if (!currentPalette.startsWith('*')) {
-      unselectPalette();
+      selectColorsOnlyPalette();
     }
   })
 
@@ -684,12 +684,13 @@ $(document).ready(function () {
     // Update the selected palette to "Colors Only" if it's not already a special palette
     const currentPalette = $('.palette-btn.selected .palette-name').text();
     if (!currentPalette.startsWith('*')) {
-      unselectPalette();
+      selectColorsOnlyPalette();
     }
     SaveWledControlConfig();
   });
 
   // Palette Functions
+
   function createGradientString(colors) {
     if (colors.length === 1) {
       return colors[0];
@@ -767,26 +768,18 @@ $(document).ready(function () {
     });
   }
 
-  function unselectPalette() {
-    const currentSelectedPalette = $('.palette-btn.selected');
-    if (!currentSelectedPalette.hasClass('special-palette')) {
-      $('.palette-btn').removeClass('selected');
-      const colorsOnlyPalette = $('.palette-btn').filter(function() {
-        return $(this).find('.palette-name').text() === '* Colors Only';
-      });
-      colorsOnlyPalette.addClass('selected');
-      wledControlConfig.palette = '* Colors Only';
-      wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
-    }
+  function selectColorsOnlyPalette() {
+    $('.palette-btn').removeClass('selected');
+    const colorsOnlyPalette = $('.palette-btn').filter(function() {
+      return $(this).find('.palette-name').text() === '* Colors Only';
+    });
+    colorsOnlyPalette.addClass('selected');
+    wledControlConfig.palette = '* Colors Only';
+    wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
+    SaveWledControlConfig();
   }
 
   $('#paletteList').on('click', '.palette-btn', function () {
-    const isSpecialPalette = $(this).hasClass('special-palette');
-    const wasSelected = $(this).hasClass('selected');
-  
-    $('.palette-btn').removeClass('selected');
-    $(this).addClass('selected');
-  
     const paletteIndex = $(this).data('palette-index');
     let selectedPalette;
   
@@ -796,40 +789,47 @@ $(document).ready(function () {
       selectedPalette = palettes[paletteIndex];
     }
   
-    if (isSpecialPalette) {
-      // Handle special palettes
-      switch (selectedPalette.name) {
-        case "* Color 1":
-          wledControlConfig.colors = [wledControlConfig.colors[0], null, null];
-          break;
-        case "* Color Gradient":
-          // We'll handle this on the WLED side
-          break;
-        case "* Colors 1&2":
-          wledControlConfig.colors = [wledControlConfig.colors[0], wledControlConfig.colors[1], null];
-          break;
-        case "* Colors Only":
-          // Keep all non-null colors
-          wledControlConfig.colors = wledControlConfig.colors.filter(color => color !== null);
-          break;
-      }
-    } else {
-      // Handle regular palettes
-      wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
-      while (wledControlConfig.colors.length < 3) {
-        wledControlConfig.colors.push(null);
-      }
-    }
+    // Check if the selected palette is different from the current one
+    if (wledControlConfig.palette !== selectedPalette.name) {
+      $('.palette-btn').removeClass('selected');
+      $(this).addClass('selected');
   
-    wledControlConfig.palette = selectedPalette.name;
-    wledControlConfig.selectedPaletteIndex = paletteIndex;
-    selectedColorIndex = 0;
-    updateCustomColorDisplay();
-    if (wledControlConfig.colors[0]) {
-      colorPicker.color.set(wledControlConfig.colors[0]);
-      updateSaturationSlider(colorPicker.color);
+      wledControlConfig.palette = selectedPalette.name;
+      wledControlConfig.selectedPaletteIndex = paletteIndex;
+  
+      if (selectedPalette.name.startsWith('*')) {
+        // Handle special palettes
+        switch (selectedPalette.name) {
+          case "* Color 1":
+            wledControlConfig.colors = [wledControlConfig.colors[0] || '#ffffff', null, null];
+            break;
+          case "* Color Gradient":
+            // We'll handle this on the WLED side
+            break;
+          case "* Colors 1&2":
+            wledControlConfig.colors = [wledControlConfig.colors[0] || '#ffffff', wledControlConfig.colors[1] || '#000000', null];
+            break;
+          case "* Colors Only":
+            // Keep all non-null colors
+            wledControlConfig.colors = wledControlConfig.colors.filter(color => color !== null);
+            break;
+        }
+      } else {
+        // Handle regular palettes
+        wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
+        while (wledControlConfig.colors.length < 3) {
+          wledControlConfig.colors.push(null);
+        }
+      }
+  
+      selectedColorIndex = 0;
+      updateCustomColorDisplay();
+      if (wledControlConfig.colors[0]) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
+        updateSaturationSlider(colorPicker.color);
+      }
+      SaveWledControlConfig();
     }
-    SaveWledControlConfig();
   });
 
   function updateCustomColorDisplay() {
