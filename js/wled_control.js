@@ -291,7 +291,7 @@ $(document).ready(function () {
     wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
     updateCustomColorDisplay();
     
-    if (!updatingSliderBasedOnPalette && !wledControlConfig.palette.startsWith('*')) {
+    if (!updatingSliderBasedOnPalette && !updatingColorBasedOnPalette && !wledControlConfig.palette.startsWith('*')) {
       selectColorsOnlyPalette();
     }
 
@@ -689,7 +689,7 @@ $(document).ready(function () {
     updateCustomColorDisplay();
     updateSaturationSlider(color);
     
-    if (!updatingColorBasedOnPalette && !wledControlConfig.palette.startsWith('*')) {
+    if (!updatingSliderBasedOnPalette && !updatingColorBasedOnPalette && !wledControlConfig.palette.startsWith('*')) {
       selectColorsOnlyPalette();
     }
     
