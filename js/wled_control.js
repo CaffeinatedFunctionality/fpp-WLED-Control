@@ -12,6 +12,8 @@ $(document).ready(function () {
     selectedPalette: '* Colors Only'
   }
 
+  let recentlySelectedPalette = false;
+
   function GetWledControlConfig() {
     const url = '/api/configfile/plugin.fpp-WLED-Control.json'
 
@@ -283,14 +285,19 @@ $(document).ready(function () {
     }
   }
 
-  colorPicker.on('color:change', function (color) {
-    selectColorsOnlyPalette();
-    $('#colorDisplay').css('background-color', color.hexString)
-    wledControlConfig.colors[selectedColorIndex] = color.hexString
-    updateCustomColorDisplay()
-    updateSaturationSlider(color)
-    SaveWledControlConfig()
-  })
+  colorPicker.on('color:change', function(color) {
+    if (!recentlySelectedPalette) {
+      wledControlConfig.colors[selectedColorIndex] = color.hexString;
+      updateCustomColorDisplay();
+      updateSaturationSlider(color);
+      
+      if (!wledControlConfig.palette.startsWith('*')) {
+        selectColorsOnlyPalette();
+      }
+      
+      SaveWledControlConfig();
+    }
+  });
 
   $('.color-preset').click(function () {
     selectColorsOnlyPalette();
@@ -676,17 +683,18 @@ $(document).ready(function () {
     saturationSlider.color.value = color.value
   }
 
-  saturationSlider.on('color:change', function (color) {
-    colorPicker.color.saturation = color.saturation;
-    wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
-    updateCustomColorDisplay();
-    
-    // Update the selected palette to "Colors Only" if it's not already a special palette
-    const currentPalette = $('.palette-btn.selected .palette-name').text();
-    if (!currentPalette.startsWith('*')) {
-      selectColorsOnlyPalette();
+  saturationSlider.on('color:change', function(color) {
+    if (!recentlySelectedPalette) {
+      colorPicker.color.saturation = color.saturation;
+      wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
+      updateCustomColorDisplay();
+      
+      if (!wledControlConfig.palette.startsWith('*')) {
+        selectColorsOnlyPalette();
+      }
+      
+      SaveWledControlConfig();
     }
-    SaveWledControlConfig();
   });
 
   // Palette Functions
@@ -789,7 +797,6 @@ $(document).ready(function () {
       selectedPalette = palettes[paletteIndex];
     }
   
-    // Check if the selected palette is different from the current one
     if (wledControlConfig.palette !== selectedPalette.name) {
       $('.palette-btn').removeClass('selected');
       $(this).addClass('selected');
@@ -797,6 +804,7 @@ $(document).ready(function () {
       wledControlConfig.palette = selectedPalette.name;
       wledControlConfig.selectedPaletteIndex = paletteIndex;
   
+      // Update colors based on the selected palette
       if (selectedPalette.name.startsWith('*')) {
         // Handle special palettes
         switch (selectedPalette.name) {
@@ -829,6 +837,9 @@ $(document).ready(function () {
         updateSaturationSlider(colorPicker.color);
       }
       SaveWledControlConfig();
+  
+      recentlySelectedPalette = true;
+      setTimeout(() => { recentlySelectedPalette = false; }, 100);
     }
   });
 
