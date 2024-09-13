@@ -90,19 +90,22 @@ $(document).ready(function () {
     json['args'] = []
     json['args'].push(wledControlConfig.models.join(',')) //models
     json['args'].push('Enabled') //state
-    json['args'].push(wledControlConfig.effect) //effect
-    for (var key in wledControlConfig.effectDetails) {
-      if (key === "Palette" && wledControlConfig.customPalettes.includes(wledControlConfig.effectDetails[key])) {
-        json['args'].push("* Colors Only")
-      } else {
-        json['args'].push(wledControlConfig.effectDetails[key].toString())
+    if(wledControlConfig.effect !== 'Solid'){
+      json['args'].push(wledControlConfig.effect)
+      for (var key in wledControlConfig.effectDetails) {
+        if (key === "Palette" && wledControlConfig.customPalettes.includes(wledControlConfig.effectDetails[key])) {
+          json['args'].push("* Colors Only")
+        } else {
+          json['args'].push(wledControlConfig.effectDetails[key].toString())
+        }
       }
-    }
-    wledControlConfig.effect === 'Solid'
-      ? json['args'].push(wledControlConfig.colors[0])
-      : wledControlConfig.colors.forEach(color => {
+      wledControlConfig.colors.forEach(color => {
         json['args'].push(color)
       })
+    } else {
+      json['args'].push(wledControlConfig.colors[0])
+    }
+    
     return json
   }
 
@@ -121,15 +124,16 @@ $(document).ready(function () {
   }
 
   function stopWledEffects() {
+    const args = wledControlConfig.effect !== 'Solid' ? [wledControlConfig.models.join(','), 'Enabled', 'Stop Effects'] : [wledControlConfig.models.join(',')];
     $.ajax({
       type: 'POST',
       url: 'api/command',
       dataType: 'json',
       data: JSON.stringify({
-        command: 'Overlay Model Effect',
+        command: wledControlConfig.effect !== 'Solid' ? 'Overlay Model Effect' : 'Overlay Model Clear',
         multisyncCommand: wledControlConfig.multisync,
         multisyncHosts: wledControlConfig.systems.join(','),
-        args: [wledControlConfig.models.join(','), 'Enabled', 'Stop Effects']
+        args
       }),
       contentType: 'application/json',
       success: function (data) {
