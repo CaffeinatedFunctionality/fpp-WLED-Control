@@ -122,11 +122,12 @@ require_once("common.php");
       </div>
     </div>
 
+    <!-- Settings Overlay -->
     <div id="settingsOverlay" class="overlay">
-      <div class="overlay-content">
-          <span class="close-btn" onclick="closeSettings()">&times;</span>
-          <h2>Settings</h2>
-          <p>Coming Soon</p>
-      </div>
+        <div class="overlay-content">
+            <span class="close-btn" onclick="closeSettings()">&times;</span>
+            <h2>Settings</h2>
+            <p>Coming Soon</p>
+        </div>
     </div>
   </div>
