@@ -204,25 +204,6 @@ input[type="range"] {
   height: 40px;
   width: 100%;
   margin-bottom: 8px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.palette-btn::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 5px; /* Adjust this value to change the thickness of the color sliver */
-}
-
-.palette-btn.special-palette::after {
-  background: linear-gradient(to right, var(--color1, #000), var(--color2, #fff));
-}
-
-.palette-btn:not(.special-palette)::after {
-  background: var(--palette-colors);
 }
 
 .palette-btn.selected {
@@ -241,8 +222,13 @@ input[type="range"] {
 }
 
 .palette-preview {
-  height: 4px;
+  height: 5px;
   width: 100%;
+  background: var(--palette-colors, transparent);
+}
+
+.palette-btn.special-palette .palette-preview {
+  background: var(--palette-colors, linear-gradient(to right, var(--color1, #000), var(--color2, #fff)));
 }
 
 .bottom-tabs {
