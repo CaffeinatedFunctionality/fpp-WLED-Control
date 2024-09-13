@@ -242,15 +242,7 @@ $(document).ready(function () {
           width: 300,
           height: 28
         }
-      }
-    ]
-  })
-
-  const saturationSlider = new iro.ColorPicker('#saturationSlider', {
-    width: 300,
-    color: 'hsl(0, 100%, 50%)',
-    borderWidth: 0,
-    layout: [
+      },
       {
         component: iro.ui.Slider,
         options: {
@@ -261,6 +253,22 @@ $(document).ready(function () {
       }
     ]
   })
+
+  // const saturationSlider = new iro.ColorPicker('#saturationSlider', {
+  //   width: 300,
+  //   color: 'hsl(0, 100%, 50%)',
+  //   borderWidth: 0,
+  //   layout: [
+  //     {
+  //       component: iro.ui.Slider,
+  //       options: {
+  //         sliderType: 'saturation',
+  //         width: 300,
+  //         height: 28
+  //       }
+  //     }
+  //   ]
+  // })
 
   let selectedColorIndex = 0 // Track which color is currently selected
 
