@@ -13,6 +13,7 @@ $(document).ready(function () {
   }
 
   let updatingColorBasedOnPalette = false;
+  let initializing = true;
 
   function GetWledControlConfig() {
     const url = '/api/configfile/plugin.fpp-WLED-Control.json'
@@ -47,6 +48,7 @@ $(document).ready(function () {
     initializeColorPickers();
     updateCustomColorDisplay();
     updatePaletteDropdown();
+    initializing = false;
   }
 
   function SaveWledControlConfig() {
@@ -614,7 +616,7 @@ $(document).ready(function () {
     wledControlConfig.colors[selectedColorIndex] = color.hexString;
     updateCustomColorDisplay();
     
-    if (!updatingColorBasedOnPalette && !wledControlConfig.selectedPalette.startsWith('*')) {
+    if (!updatingColorBasedOnPalette && !initializing && !wledControlConfig.selectedPalette.startsWith('*')) {
       selectColorsOnlyPalette();
     }
     
