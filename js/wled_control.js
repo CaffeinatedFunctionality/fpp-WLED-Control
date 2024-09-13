@@ -877,7 +877,7 @@ $(document).ready(function () {
            existingPalettes.find(p => p.name === name);
   }
 
-  $('#paletteDropdown').on('change', function() {
+  $('#PaletteDropdown').on('change', function() {
     const selectedPaletteName = $(this).val();
     updateSelectedPalette(selectedPaletteName);
   });
