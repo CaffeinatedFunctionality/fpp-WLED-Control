@@ -669,7 +669,7 @@ $(document).ready(function () {
       const isSelected = wledControlConfig.selectedPalette === defaultPalette.name;
       const gradientColors = createGradientString(defaultPalette.colors);
         paletteList.append(`
-          <button class="palette-btn special-palette ${isSelected ? 'selected' : ''}" data-palette-name="${defaultPalette.name}" data-special-palette-index="${index}">
+          <button class="palette-btn special-palette ${isSelected ? 'selected' : ''}" data-palette-name="${defaultPalette.name}" data-special-palette-index="0">
             <span class="palette-name">${defaultPalette.name}</span>
             <div class="palette-preview" style="background: ${gradientColors};"></div>
           </button>
