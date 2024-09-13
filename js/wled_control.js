@@ -257,6 +257,7 @@ $(document).ready(function () {
       $.get('api/overlays/effects/' + effectName).done(function (data) {
         wledControlConfig.effect = effectName
         wledControlConfig.colors = []
+        wledControlConfig.effectDetails = {}
 
         specialPalettes = specialPalettes.filter(p => p.name !== 'Default');
 
