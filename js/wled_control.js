@@ -276,6 +276,7 @@ $(document).ready(function () {
     if (!$('.palette-btn.selected').length) {
       selectColorsOnlyPalette();
     }
+    updateSpecialPaletteBackgrounds();
   }
 
   $('.color-preset').click(function () {
@@ -816,23 +817,6 @@ $(document).ready(function () {
     }
     updatingColorBasedOnPalette = false;
   });
-
-  function updateCustomColorDisplay() {
-    for (let i = 0; i < 3; i++) {
-      const color = wledControlConfig.colors[i];
-      const customColorBtn = $(`#customColor${i + 1}`);
-
-      if (color) {
-        customColorBtn.removeClass('empty').addClass('filled').css('background-color', color);
-        customColorBtn.find('span').text(i + 1);
-      } else {
-        customColorBtn.removeClass('filled').addClass('empty').css('background-color', '');
-        customColorBtn.find('span').html('<span class="add-color">+</span>');
-      }
-    }
-
-    updateSpecialPaletteBackgrounds();
-  }
 
   function updatePaletteDropdown() {
     const paletteDropdown = $('#PaletteDropdown');
