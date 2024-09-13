@@ -20,7 +20,7 @@ require_once("common.php");
       </button>
       <div class="brightness-control">
         <i class="material-icons">brightness_medium</i>
-        <input type="range" id="brightnessSlider" min="0" max="255" value="50">
+        <input type="range" id="brightnessSlider" min="0" max="255" value="128">
       </div>
       <button id="settingsButton">
         <i class="material-icons">settings</i>

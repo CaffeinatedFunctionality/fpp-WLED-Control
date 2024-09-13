@@ -272,6 +272,9 @@ $(document).ready(function () {
       }
       $button.toggleClass('selected', i === selectedColorIndex)
     }
+    if (!$('.palette-btn.selected').length) {
+      unselectPalette();
+    }
   }
 
   colorPicker.on('color:change', function (color) {
@@ -551,20 +554,25 @@ $(document).ready(function () {
 
   // Custom color selection
   $('.custom-color').on('click', function (e) {
-    unselectPalette();
-    const index = $('.custom-color').index(this)
-    selectedColorIndex = index
+    const index = $('.custom-color').index(this);
+    selectedColorIndex = index;
     if ($(e.target).hasClass('remove-color')) {
-      wledControlConfig.colors[index] = null
-      updateCustomColorDisplay()
+      wledControlConfig.colors[index] = null;
+      updateCustomColorDisplay();
     } else if (wledControlConfig.colors[index]) {
-      colorPicker.color.set(wledControlConfig.colors[index])
+      colorPicker.color.set(wledControlConfig.colors[index]);
     } else {
       // Add a new color
-      wledControlConfig.colors[index] = colorPicker.color.hexString
+      wledControlConfig.colors[index] = colorPicker.color.hexString;
     }
-    updateCustomColorDisplay()
-    SaveWledControlConfig()
+    updateCustomColorDisplay();
+    SaveWledControlConfig();
+    
+    // Update the selected palette to "Colors Only" if it's not already a special palette
+    const currentPalette = $('.palette-btn.selected .palette-name').text();
+    if (!currentPalette.startsWith('*')) {
+      unselectPalette();
+    }
   })
 
   $('.color-preset').click(function () {
@@ -663,9 +671,14 @@ $(document).ready(function () {
   }
 
   saturationSlider.on('color:change', function (color) {
-    unselectPalette();
-    colorPicker.color.saturation = color.saturation
-    updateCustomColorDisplay()
+    colorPicker.color.saturation = color.saturation;
+    updateCustomColorDisplay();
+    
+    // Update the selected palette to "Colors Only" if it's not already a special palette
+    const currentPalette = $('.palette-btn.selected .palette-name').text();
+    if (!currentPalette.startsWith('*')) {
+      unselectPalette();
+    }
   })
 
   // Palette Functions
@@ -744,7 +757,12 @@ $(document).ready(function () {
 
   function unselectPalette() {
     $('.palette-btn').removeClass('selected');
-    wledControlConfig.selectedPaletteIndex = -1;
+    const colorsOnlyPalette = $('.palette-btn').filter(function() {
+      return $(this).find('.palette-name').text() === '* Colors Only';
+    });
+    colorsOnlyPalette.addClass('selected');
+    wledControlConfig.palette = '* Colors Only';
+    wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
   }
 
   $('#paletteList').on('click', '.palette-btn', function () {
@@ -810,4 +828,12 @@ $(document).ready(function () {
   populatePalettes()
   getEffectsList()
   GetWledControlConfig()
+
+  function initializeBrightnessSlider() {
+    $('#brightnessSlider').val(wledControlConfig.brightness);
+  }
+  
+  GetWledControlConfig().then(() => {
+    initializeBrightnessSlider();
+  });
 })
