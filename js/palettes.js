@@ -1,4 +1,4 @@
-const specialPalettes = [
+let specialPalettes = [
   { name: "* Color 1", colors: [] },
   { name: "* Color Gradient", colors: [] },
   { name: "* Colors 1&2", colors: [] },
