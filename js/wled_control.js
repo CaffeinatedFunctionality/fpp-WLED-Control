@@ -2,7 +2,7 @@ $(document).ready(function () {
   let wledControlConfig = {
     systems: [],
     models: [],
-    brightness: 100,
+    brightness: 255,
     colors: [],
     multisync: false,
     effect: 'WLED - Solid Pattern',
@@ -76,7 +76,7 @@ $(document).ready(function () {
     wledControlConfig = {
       systems: [],
       models: [],
-      brightness: 100,
+      brightness: 128,
       colors: [],
       multisync: false,
       effect: 'WLED - Solid Pattern',
@@ -94,6 +94,12 @@ $(document).ready(function () {
     wledControlConfig.colors = wledControlConfig.colors.filter(
       color => color !== null
     )
+
+    wledControlConfig.selectedPaletteIndex = $('.palette-btn.selected').index();
+    if (wledControlConfig.selectedPaletteIndex === -1) {
+      wledControlConfig.selectedPaletteIndex = -1;
+    }
+
     var data = JSON.stringify(wledControlConfig)
     $.ajax({
       type: 'POST',
@@ -125,7 +131,11 @@ $(document).ready(function () {
     json['args'].push('Enabled') //state
     json['args'].push(wledControlConfig.effect) //effect
     for (var key in wledControlConfig.effectDetails) {
-      json['args'].push(wledControlConfig.effectDetails[key].toString())
+      if(key === "Palette" && wledControlConfig.customPalettes.includes(wledControlConfig.effectDetails[key])) {
+        json['args'].push("* Colors Only")
+      } else {
+        json['args'].push(wledControlConfig.effectDetails[key].toString())
+      }
     }
     wledControlConfig.effect === 'Solid'
       ? json['args'].push(wledControlConfig.colors[0])
@@ -266,6 +276,7 @@ $(document).ready(function () {
   }
 
   colorPicker.on('color:change', function (color) {
+    unselectPalette();
     $('#colorDisplay').css('background-color', color.hexString)
     wledControlConfig.colors[selectedColorIndex] = color.hexString
     updateCustomColorDisplay()
@@ -274,6 +285,7 @@ $(document).ready(function () {
   })
 
   $('.color-preset').click(function () {
+    unselectPalette();
     if ($(this).hasClass('random-preset')) {
       const randomColor =
         '#' + Math.floor(Math.random() * 16777215).toString(16)
@@ -414,34 +426,6 @@ $(document).ready(function () {
     })
   }
 
-  function populatePalettes () {
-    const paletteList = $('#paletteList')
-    paletteList.empty()
-
-    // Add custom palettes first
-    if (wledControlConfig.customPalettes) {
-      wledControlConfig.customPalettes.forEach((palette, index) => {
-        const gradientColors = palette.colors.join(', ')
-        paletteList.append(`
-                  <button class="palette-btn custom-palette" data-palette-index="${index}">
-                      <span class="palette-name">${palette.name}</span>
-                      <div class="palette-preview" style="background: linear-gradient(to right, ${gradientColors});"></div>
-                  </button>
-              `)
-      })
-    }
-
-    // Add standard palettes
-    palettes.forEach((palette, index) => {
-      const gradientColors = palette.colors.join(', ')
-      paletteList.append(`
-                <button class="palette-btn" data-palette-index="${index}">
-                    <span class="palette-name">${palette.name}</span>
-                    <div class="palette-preview" style="background: linear-gradient(to right, ${gradientColors});"></div>
-                </button>
-            `)
-    })
-  }
 
   function populateEffectsList (effects) {
     const effectList = $('#effectList')
@@ -484,38 +468,6 @@ $(document).ready(function () {
 
   // Initialize tabs (show the first tab)
   $('.tab-btn:first').click()
-
-  // Palette selection
-  $('#paletteList').on('click', '.palette-btn', function () {
-    $('.palette-btn').removeClass('selected');
-    $(this).addClass('selected');
-
-    const paletteIndex = $(this).data('palette-index')
-    let selectedPalette
-
-    if ($(this).hasClass('custom-palette')) {
-      selectedPalette = wledControlConfig.customPalettes[paletteIndex]
-    } else {
-      selectedPalette = palettes[paletteIndex]
-    }
-
-    wledControlConfig.palette = selectedPalette.name;
-
-    wledControlConfig.colors = selectedPalette.colors
-      .slice(0, 3)
-      .map(color => rgbToHex(color))
-    while (wledControlConfig.colors.length < 3) {
-      wledControlConfig.colors.push(null)
-    }
-    selectedColorIndex = 0
-    updateCustomColorDisplay()
-    if (wledControlConfig.colors[0]) {
-      colorPicker.color.set(wledControlConfig.colors[0])
-      updateSaturationSlider(colorPicker.color)
-    }
-    SaveWledControlConfig()
-    updateControlValues();
-  })
 
   // Effect selection
   $('#effectList').on('click', '.effect-btn', function () {
@@ -601,6 +553,7 @@ $(document).ready(function () {
 
   // Custom color selection
   $('.custom-color').on('click', function (e) {
+    unselectPalette();
     const index = $('.custom-color').index(this)
     selectedColorIndex = index
     if ($(e.target).hasClass('remove-color')) {
@@ -712,6 +665,7 @@ $(document).ready(function () {
   }
 
   saturationSlider.on('color:change', function (color) {
+    unselectPalette();
     colorPicker.color.saturation = color.saturation
     updateCustomColorDisplay()
   })
