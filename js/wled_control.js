@@ -8,7 +8,8 @@ $(document).ready(function () {
     effect: 'WLED - Solid Pattern',
     power: false,
     customPalettes: [],
-    effectDetails: {}
+    effectDetails: {},
+    selectedPalette: '* Colors Only'
   }
 
   function GetWledControlConfig() {
@@ -65,6 +66,9 @@ $(document).ready(function () {
     wledControlConfig = data
     if (!wledControlConfig.customPalettes) {
       wledControlConfig.customPalettes = []
+    }
+    if (!wledControlConfig.selectedPalette) {
+      wledControlConfig.selectedPalette = '* Colors Only'
     }
     updateUIFromConfig()
     populatePalettes()
@@ -211,6 +215,8 @@ $(document).ready(function () {
     $('#powerButton').toggleClass('active', wledControlConfig.power)
     //todo: check status to determine if effect is running and set power button state accordingly
     setWledEffect(wledControlConfig.effect)
+    $('.palette-btn').removeClass('selected');
+    $(`.palette-btn:contains("${wledControlConfig.selectedPalette}")`).addClass('selected');
   }
 
   const colorPicker = new iro.ColorPicker('#colorPicker', {
@@ -776,7 +782,13 @@ $(document).ready(function () {
     $(this).addClass('selected');
   
     const paletteIndex = $(this).data('palette-index');
-    const selectedPalette = palettes[paletteIndex];
+    let selectedPalette;
+
+    if ($(this).hasClass('custom-palette')) {
+      selectedPalette = wledControlConfig.customPalettes[paletteIndex];
+    } else {
+      selectedPalette = palettes[paletteIndex];
+    }
   
     if (isSpecialPalette) {
       // Handle special palettes
