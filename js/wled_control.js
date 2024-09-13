@@ -256,6 +256,7 @@ $(document).ready(function () {
     } else {
       $.get('api/overlays/effects/' + effectName).done(function (data) {
         wledControlConfig.effect = effectName
+        wledControlConfig.colors = []
 
         specialPalettes = specialPalettes.filter(p => p.name !== 'Default');
 
@@ -270,12 +271,12 @@ $(document).ready(function () {
             wledControlConfig.colors.push(arg.default)
           } else if (arg.type === 'string' && arg.contents) {
             if (arg.name === 'Palette') {
-              const defaultPalette = arg.default || arg.contents[0];
+              const defaultPalette = data.args.filter(a => a.type === 'color').map(a => a.default);
               wledControlConfig.effectDetails[arg.name] = defaultPalette;
               wledControlConfig.selectedPalette = defaultPalette;
               if (defaultPalette && !defaultPalette.startsWith('*')) {
                 specialPalettes.unshift({
-                  name: '* Default',
+                  name: 'Default',
                   colors: [defaultPalette]
                 });
               }
@@ -662,13 +663,13 @@ $(document).ready(function () {
     const paletteList = $('#paletteList')
     paletteList.empty()
 
-    const defaultPalette = specialPalettes.find(p => p.name === '* Default');
+    const defaultPalette = specialPalettes.find(p => p.name === 'Default');
     if (defaultPalette) {
       addPaletteButton(defaultPalette, paletteList, 0, true);
     }
 
     specialPalettes.forEach((palette, index) => {
-      if (palette.name !== '* Default') {
+      if (palette.name !== 'Default') {
         addPaletteButton(palette, paletteList, index, true);
       }
     });
