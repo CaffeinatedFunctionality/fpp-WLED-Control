@@ -670,6 +670,17 @@ $(document).ready(function () {
 
   // Palette Functions
 
+  function createGradientString(colors) {
+    if (colors.length === 1) {
+      return colors[0];
+    }
+    const stops = colors.map((color, index) => {
+      const percentage = (index / (colors.length - 1)) * 100;
+      return `${color} ${percentage}%`;
+    });
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+  }
+
   function populatePalettes() {
     const paletteList = $('#paletteList')
     paletteList.empty()
@@ -677,13 +688,13 @@ $(document).ready(function () {
     // Add custom palettes first
     if (wledControlConfig.customPalettes) {
       wledControlConfig.customPalettes.forEach((palette, index) => {
-        const gradientColors = palette.colors.join(', ')
+        const gradientColors = createGradientString(palette.colors);
         paletteList.append(`
-              <button class="palette-btn custom-palette" data-palette-index="${index}">
-                <span class="palette-name">${palette.name}</span>
-                <div class="palette-preview" style="background: linear-gradient(to right, ${gradientColors});"></div>
-              </button>
-            `)
+          <button class="palette-btn custom-palette" data-palette-index="${index}">
+            <span class="palette-name">${palette.name}</span>
+            <div class="palette-preview" style="background: ${gradientColors};"></div>
+          </button>
+        `)
       })
     }
 
@@ -695,8 +706,8 @@ $(document).ready(function () {
         .html(`<span class="palette-name">${palette.name}</span><div class="palette-preview"></div>`);
     
       if (palette.colors.length > 0) {
-        const gradientColors = palette.colors.map(color => `${color} ${(100 / palette.colors.length).toFixed(2)}%`).join(', ');
-        paletteButton.find('.palette-preview').css('background', `linear-gradient(to right, ${gradientColors})`);
+        const gradientColors = createGradientString(palette.colors);
+        paletteButton.find('.palette-preview').css('background', gradientColors);
       } else {
         paletteButton.addClass('special-palette');
       }
@@ -719,14 +730,13 @@ $(document).ready(function () {
           previewDiv.css('background', customColors[0] || '#000000');
           break;
         case "* Color Gradient":
-          previewDiv.css('background', `linear-gradient(to right, ${customColors[0] || '#000000'}, #ffffff)`);
+          previewDiv.css('background', createGradientString([customColors[0] || '#000000', '#ffffff']));
           break;
         case "* Colors 1&2":
-          previewDiv.css('background', `linear-gradient(to right, ${customColors[0] || '#000000'}, ${customColors[1] || '#ffffff'})`);
+          previewDiv.css('background', createGradientString([customColors[0] || '#000000', customColors[1] || '#ffffff']));
           break;
         case "* Colors Only":
-          const gradientColors = customColors.map(color => `${color} ${(100 / customColors.length).toFixed(2)}%`).join(', ');
-          previewDiv.css('background', `linear-gradient(to right, ${gradientColors})`);
+          previewDiv.css('background', createGradientString(customColors));
           break;
       }
     });
