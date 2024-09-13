@@ -61,11 +61,6 @@ $(document).ready(function () {
       color => color !== null
     )
 
-    wledControlConfig.selectedPaletteIndex = $('.palette-btn.selected').index();
-    if (wledControlConfig.selectedPaletteIndex === -1) {
-      wledControlConfig.selectedPaletteIndex = -1;
-    }
-
     var data = JSON.stringify(wledControlConfig)
     $.ajax({
       type: 'POST',
@@ -262,6 +257,8 @@ $(document).ready(function () {
       $.get('api/overlays/effects/' + effectName).done(function (data) {
         wledControlConfig.effect = effectName
 
+        specialPalettes = specialPalettes.filter(p => p.name !== 'Default');
+
         data.args.forEach(arg => {
           if (arg.type === 'range') {
             if (arg.name === 'Brightness') {
@@ -273,8 +270,15 @@ $(document).ready(function () {
             wledControlConfig.colors.push(arg.default)
           } else if (arg.type === 'string' && arg.contents) {
             if (arg.name === 'Palette') {
-              wledControlConfig.effectDetails[arg.name] = wledControlConfig.selectedPalette || arg.default || arg.contents[0]
-              wledControlConfig.selectedPalette = arg.default || arg.contents[0];
+              const defaultPalette = arg.default || arg.contents[0];
+              wledControlConfig.effectDetails[arg.name] = defaultPalette;
+              wledControlConfig.selectedPalette = defaultPalette;
+              if (defaultPalette && !defaultPalette.startsWith('*')) {
+                specialPalettes.unshift({
+                  name: '* Default',
+                  colors: [defaultPalette]
+                });
+              }
             } else {
               wledControlConfig.effectDetails[arg.name] = arg.default || arg.contents[0]
             }
@@ -284,6 +288,7 @@ $(document).ready(function () {
         SaveWledControlConfig()
         updateEffectControls(data.args)
         updateCustomColorDisplay()
+        populatePalettes()
         checkAndRunEffect()
       })
     }
@@ -640,18 +645,32 @@ $(document).ready(function () {
     return `linear-gradient(to right, ${stops.join(', ')})`;
   }
 
+  function addPaletteButton(palette, container, index, isSpecial) {
+    const isSelected = wledControlConfig.selectedPalette === palette.name;
+    const paletteType = isSpecial ? 'special-palette' : 'custom-palette';
+    const indexAttr = isSpecial ? `data-special-palette-index="${index}"` : `data-custom-palette-index="${index}"`;
+    
+    container.append(`
+      <button class="palette-btn ${paletteType} ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" ${indexAttr}>
+        <span class="palette-name">${palette.name}</span>
+        <div class="palette-preview"></div>
+      </button>
+    `);
+  }
+
   function populatePalettes() {
     const paletteList = $('#paletteList')
     paletteList.empty()
 
+    const defaultPalette = specialPalettes.find(p => p.name === '* Default');
+    if (defaultPalette) {
+      addPaletteButton(defaultPalette, paletteList, 0, true);
+    }
+
     specialPalettes.forEach((palette, index) => {
-      const isSelected = wledControlConfig.selectedPalette === palette.name;
-      paletteList.append(`
-        <button class="palette-btn special-palette ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" data-special-palette-index="${index}">
-          <span class="palette-name">${palette.name}</span>
-          <div class="palette-preview"></div>
-        </button>
-      `);
+      if (palette.name !== '* Default') {
+        addPaletteButton(palette, paletteList, index, true);
+      }
     });
 
     // Add custom palettes first
@@ -713,7 +732,6 @@ $(document).ready(function () {
     });
     colorsOnlyPalette.addClass('selected');
     wledControlConfig.selectedPalette = '* Colors Only';
-    wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
     SaveWledControlConfig();
   }
 
@@ -736,7 +754,6 @@ $(document).ready(function () {
   
     if (wledControlConfig.selectedPalette !== selectedPalette.name) {
       wledControlConfig.selectedPalette = selectedPalette.name;
-      wledControlConfig.selectedPaletteIndex = paletteIndex;
   
       // Update colors based on the selected palette
       if (selectedPalette.name.startsWith('*')) {
