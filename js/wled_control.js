@@ -835,7 +835,7 @@ $(document).ready(function () {
   }
 
   function updatePaletteDropdown() {
-    const paletteDropdown = $('#paletteDropdown');
+    const paletteDropdown = $('#PaletteDropdown');
     if (paletteDropdown.length) {
       paletteDropdown.empty();
       palettes.forEach((palette, index) => {
