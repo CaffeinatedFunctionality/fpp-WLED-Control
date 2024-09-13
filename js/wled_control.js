@@ -286,17 +286,15 @@ $(document).ready(function () {
   }
 
   colorPicker.on('color:change', function(color) {
-    if (!recentlySelectedPalette) {
-      wledControlConfig.colors[selectedColorIndex] = color.hexString;
-      updateCustomColorDisplay();
-      updateSaturationSlider(color);
-      
-      if (!wledControlConfig.palette.startsWith('*')) {
-        selectColorsOnlyPalette();
-      }
-      
-      SaveWledControlConfig();
+    wledControlConfig.colors[selectedColorIndex] = color.hexString;
+    updateCustomColorDisplay();
+    updateSaturationSlider(color);
+    
+    if (!recentlySelectedPalette && !wledControlConfig.palette.startsWith('*')) {
+      selectColorsOnlyPalette();
     }
+    
+    SaveWledControlConfig();
   });
 
   $('.color-preset').click(function () {
@@ -683,18 +681,16 @@ $(document).ready(function () {
     saturationSlider.color.value = color.value
   }
 
-  saturationSlider.on('color:change', function(color) {
-    if (!recentlySelectedPalette) {
-      colorPicker.color.saturation = color.saturation;
-      wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
-      updateCustomColorDisplay();
-      
-      if (!wledControlConfig.palette.startsWith('*')) {
-        selectColorsOnlyPalette();
-      }
-      
-      SaveWledControlConfig();
+  colorPicker.on('color:change', function(color) {
+    wledControlConfig.colors[selectedColorIndex] = color.hexString;
+    updateCustomColorDisplay();
+    updateSaturationSlider(color);
+    
+    if (!recentlySelectedPalette && !wledControlConfig.palette.startsWith('*')) {
+      selectColorsOnlyPalette();
     }
+    
+    SaveWledControlConfig();
   });
 
   // Palette Functions
