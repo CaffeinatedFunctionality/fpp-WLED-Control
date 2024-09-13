@@ -47,9 +47,9 @@ $(document).ready(function () {
     updateUIFromConfig()
     initializeColorPickers();
     updateCustomColorDisplay();
-    updatePaletteDropdown();
     if (wledControlConfig.effect) {
       selectEffect(wledControlConfig.effect);
+      updatePaletteDropdown();
     }
     initializing = false;
   }
