@@ -72,6 +72,7 @@ $(document).ready(function () {
     if (!wledControlConfig.selectedPalette) {
       wledControlConfig.selectedPalette = '* Colors Only'
     }
+    updatePaletteDropdown();
     updateUIFromConfig()
     populatePalettes()
     getEffectsList()
@@ -315,7 +316,7 @@ $(document).ready(function () {
             wledControlConfig.colors.push(arg.default)
           } else if (arg.type === 'string' && arg.contents) {
             if (arg.name === 'Palette') {
-              wledControlConfig.effectDetails[arg.name] = wledControlConfig.palette || arg.default || arg.contents[0]
+              wledControlConfig.effectDetails[arg.name] = wledControlConfig.selectedPalette || arg.default || arg.contents[0]
             } else {
               wledControlConfig.effectDetails[arg.name] = arg.default || arg.contents[0]
             }
@@ -659,7 +660,7 @@ $(document).ready(function () {
     wledControlConfig.colors[selectedColorIndex] = color.hexString;
     updateCustomColorDisplay();
     
-    if (!updatingColorBasedOnPalette && !wledControlConfig.palette.startsWith('*')) {
+    if (!updatingColorBasedOnPalette && !wledControlConfig.selectedPalette.startsWith('*')) {
       selectColorsOnlyPalette();
     }
     
@@ -753,7 +754,7 @@ $(document).ready(function () {
       return $(this).find('.palette-name').text() === '* Colors Only';
     });
     colorsOnlyPalette.addClass('selected');
-    wledControlConfig.palette = '* Colors Only';
+    wledControlConfig.selectedPalette = '* Colors Only';
     wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
     SaveWledControlConfig();
   }
@@ -770,8 +771,8 @@ $(document).ready(function () {
   
     updatingColorBasedOnPalette = true;
   
-    if (wledControlConfig.palette !== selectedPalette.name) {
-      wledControlConfig.palette = selectedPalette.name;
+    if (wledControlConfig.selectedPalette !== selectedPalette.name) {
+      wledControlConfig.selectedPalette = selectedPalette.name;
       wledControlConfig.selectedPaletteIndex = paletteIndex;
   
       // Update colors based on the selected palette
@@ -840,11 +841,11 @@ $(document).ready(function () {
       wledControlConfig.customPalettes.forEach((palette, index) => {
         paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
       });
-      paletteDropdown.val(wledControlConfig.palette);
+      paletteDropdown.val(wledControlConfig.selectedPalette);
     }
 
     $('.palette-btn').removeClass('selected');
-    $(`.palette-btn[data-palette-name="${wledControlConfig.palette}"]`).addClass('selected');
+    $(`.palette-btn[data-palette-name="${wledControlConfig.selectedPalette}"]`).addClass('selected');
   }
 
   initializeColorPickers()
