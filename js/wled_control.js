@@ -271,13 +271,14 @@ $(document).ready(function () {
             wledControlConfig.colors.push(arg.default)
           } else if (arg.type === 'string' && arg.contents) {
             if (arg.name === 'Palette') {
-              const defaultPalette = data.args.filter(a => a.type === 'color').map(a => a.default);
+              const defaultPalette = arg.default || arg.contents[0];
+              const defaultColors = data.args.filter(a => a.type === 'color').map(a => a.default);
               wledControlConfig.effectDetails[arg.name] = defaultPalette;
               wledControlConfig.selectedPalette = defaultPalette;
               if (defaultPalette && !defaultPalette.startsWith('*')) {
                 specialPalettes.unshift({
                   name: 'Default',
-                  colors: [defaultPalette]
+                  colors: [defaultColors]
                 });
               }
             } else {
