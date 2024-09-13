@@ -72,11 +72,12 @@ $(document).ready(function () {
     if (!wledControlConfig.selectedPalette) {
       wledControlConfig.selectedPalette = '* Colors Only'
     }
+    updateUIFromConfig()
     initializeBrightnessSlider();
     initializeColorPickers();
     updateCustomColorDisplay();
     updatePaletteDropdown();
-    updateUIFromConfig()
+    
   }
 
   function useDefaultConfig() {
@@ -98,6 +99,7 @@ $(document).ready(function () {
   }
 
   function SaveWledControlConfig() {
+    console.log('SaveWledControlConfig called', new Error().stack);
     // Filter out null values before saving
     wledControlConfig.colors = wledControlConfig.colors.filter(
       color => color !== null
@@ -876,9 +878,6 @@ $(document).ready(function () {
   populatePalettes()
   getEffectsList()
 
-  function initializeBrightnessSlider() {
-    $('#brightnessSlider').val(wledControlConfig.brightness);
-  }
   
   GetWledControlConfig()
 })
