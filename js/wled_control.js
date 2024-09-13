@@ -705,6 +705,7 @@ $(document).ready(function () {
       const paletteButton = $('<button>')
         .addClass('palette-btn')
         .attr('data-palette-index', index)
+        .attr('data-palette-name', palette.name)
         .html(`<span class="palette-name">${palette.name}</span><div class="palette-preview"></div>`);
     
       if (palette.colors.length > 0) {
