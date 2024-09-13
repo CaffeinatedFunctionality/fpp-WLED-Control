@@ -764,6 +764,10 @@ $(document).ready(function () {
   
     if (wledControlConfig.selectedPalette !== selectedPalette.name) {
       wledControlConfig.selectedPalette = selectedPalette.name;
+
+      if (wledControlConfig.effectDetails.hasOwnProperty('Palette')) {
+        wledControlConfig.effectDetails.Palette = selectedPalette.name;
+      }
   
       // Update colors based on the selected palette
       if (selectedPalette.name.startsWith('*')) {
