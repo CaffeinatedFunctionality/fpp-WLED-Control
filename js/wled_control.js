@@ -258,8 +258,6 @@ $(document).ready(function () {
     } else {
       $.get('api/overlays/effects/' + effectName).done(function (data) {
         wledControlConfig.effect = effectName
-        wledControlConfig.effectDetails = {}
-        wledControlConfig.colors = []
 
         data.args.forEach(arg => {
           if (arg.type === 'range') {
@@ -273,6 +271,7 @@ $(document).ready(function () {
           } else if (arg.type === 'string' && arg.contents) {
             if (arg.name === 'Palette') {
               wledControlConfig.effectDetails[arg.name] = wledControlConfig.selectedPalette || arg.default || arg.contents[0]
+              wledControlConfig.selectedPalette = arg.default || arg.contents[0];
             } else {
               wledControlConfig.effectDetails[arg.name] = arg.default || arg.contents[0]
             }
