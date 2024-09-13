@@ -44,7 +44,6 @@ $(document).ready(function () {
       wledControlConfig.selectedPalette = '* Colors Only'
     }
     updateUIFromConfig()
-    initializeBrightnessSlider();
     initializeColorPickers();
     updateCustomColorDisplay();
     updatePaletteDropdown();
