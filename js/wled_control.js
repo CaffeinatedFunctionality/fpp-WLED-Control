@@ -835,7 +835,7 @@ $(document).ready(function () {
   }
 
   function updatePaletteDropdown() {
-    const paletteDropdown = $('#paletteDropdown');
+    const paletteDropdown = $('#PaletteDropdown');
     if (paletteDropdown.length) {
       paletteDropdown.empty();
       specialPalettes.concat(wledControlConfig.customPalettes, existingPalettes).forEach((palette) => {
