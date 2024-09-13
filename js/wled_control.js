@@ -756,23 +756,29 @@ $(document).ready(function () {
   }
 
   function unselectPalette() {
-    $('.palette-btn').removeClass('selected');
-    const colorsOnlyPalette = $('.palette-btn').filter(function() {
-      return $(this).find('.palette-name').text() === '* Colors Only';
-    });
-    colorsOnlyPalette.addClass('selected');
-    wledControlConfig.palette = '* Colors Only';
-    wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
+    const currentSelectedPalette = $('.palette-btn.selected');
+    if (!currentSelectedPalette.hasClass('special-palette')) {
+      $('.palette-btn').removeClass('selected');
+      const colorsOnlyPalette = $('.palette-btn').filter(function() {
+        return $(this).find('.palette-name').text() === '* Colors Only';
+      });
+      colorsOnlyPalette.addClass('selected');
+      wledControlConfig.palette = '* Colors Only';
+      wledControlConfig.selectedPaletteIndex = palettes.findIndex(p => p.name === '* Colors Only');
+    }
   }
 
   $('#paletteList').on('click', '.palette-btn', function () {
+    const isSpecialPalette = $(this).hasClass('special-palette');
+    const wasSelected = $(this).hasClass('selected');
+  
     $('.palette-btn').removeClass('selected');
     $(this).addClass('selected');
-
+  
     const paletteIndex = $(this).data('palette-index');
     const selectedPalette = palettes[paletteIndex];
-
-    if (selectedPalette.name.startsWith('*')) {
+  
+    if (isSpecialPalette) {
       // Handle special palettes
       switch (selectedPalette.name) {
         case "* Color 1":
@@ -789,15 +795,16 @@ $(document).ready(function () {
           wledControlConfig.colors = wledControlConfig.colors.filter(color => color !== null);
           break;
       }
-    } else {
-      // Handle regular palettes as before
+    } else if (!wasSelected) {
+      // Handle regular palettes only if it wasn't already selected
       wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
       while (wledControlConfig.colors.length < 3) {
         wledControlConfig.colors.push(null);
       }
     }
-
+  
     wledControlConfig.palette = selectedPalette.name;
+    wledControlConfig.selectedPaletteIndex = paletteIndex;
     selectedColorIndex = 0;
     updateCustomColorDisplay();
     if (wledControlConfig.colors[0]) {
