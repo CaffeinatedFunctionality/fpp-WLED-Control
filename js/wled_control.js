@@ -278,7 +278,7 @@ $(document).ready(function () {
               if (defaultPalette && !defaultPalette.startsWith('*')) {
                 specialPalettes.unshift({
                   name: 'Default',
-                  colors: [defaultColors]
+                  colors: [defaultColors[0]]
                 });
               }
             } else {
