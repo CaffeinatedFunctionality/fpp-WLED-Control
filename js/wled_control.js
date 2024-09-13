@@ -11,7 +11,7 @@ $(document).ready(function () {
     effectDetails: {},
     selectedPalette: '* Colors Only'
   }
-  
+
   let updatingColorBasedOnPalette = false;
 
   function GetWledControlConfig() {
@@ -359,6 +359,7 @@ $(document).ready(function () {
     })
 
     updateControlValues()
+    updatePaletteDropdown() 
   }
 
   function createIconSlider(arg) {
@@ -766,13 +767,10 @@ $(document).ready(function () {
     } else {
       selectedPalette = palettes[paletteIndex];
     }
-
+  
     updatingColorBasedOnPalette = true;
   
     if (wledControlConfig.palette !== selectedPalette.name) {
-      $('.palette-btn').removeClass('selected');
-      $(this).addClass('selected');
-  
       wledControlConfig.palette = selectedPalette.name;
       wledControlConfig.selectedPaletteIndex = paletteIndex;
   
@@ -807,10 +805,10 @@ $(document).ready(function () {
       if (wledControlConfig.colors[0]) {
         colorPicker.color.set(wledControlConfig.colors[0]);
       }
+      updatePaletteDropdown();
       SaveWledControlConfig();
-    } else {
-      updatingColorBasedOnPalette = false;
     }
+    updatingColorBasedOnPalette = false;
   });
 
   function updateCustomColorDisplay() {
@@ -828,6 +826,25 @@ $(document).ready(function () {
     }
 
     updateSpecialPaletteBackgrounds();
+  }
+
+  function updatePaletteDropdown() {
+    const paletteDropdown = $('#paletteDropdown');
+    if (paletteDropdown.length) {
+      paletteDropdown.empty();
+      palettes.forEach((palette, index) => {
+        if (!palette.name.startsWith('*')) {
+          paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
+        }
+      });
+      wledControlConfig.customPalettes.forEach((palette, index) => {
+        paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
+      });
+      paletteDropdown.val(wledControlConfig.palette);
+    }
+
+    $('.palette-btn').removeClass('selected');
+    $(`.palette-btn[data-palette-name="${wledControlConfig.palette}"]`).addClass('selected');
   }
 
   initializeColorPickers()
