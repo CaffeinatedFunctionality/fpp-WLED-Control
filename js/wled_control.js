@@ -797,6 +797,9 @@ $(document).ready(function () {
     } else {
       selectedPalette = palettes[paletteIndex];
     }
+
+    updatingColorBasedOnPalette = true;
+    updatingSliderBasedOnPalette = true;
   
     if (wledControlConfig.palette !== selectedPalette.name) {
       $('.palette-btn').removeClass('selected');
@@ -838,9 +841,9 @@ $(document).ready(function () {
         updateSaturationSlider(colorPicker.color);
       }
       SaveWledControlConfig();
-  
-      updatingColorBasedOnPalette = true;
-      updatingSliderBasedOnPalette = true;
+    } else {
+      updatingColorBasedOnPalette = false;
+      updatingSliderBasedOnPalette = false;
     }
   });
 
