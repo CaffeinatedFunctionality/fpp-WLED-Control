@@ -827,6 +827,10 @@ $(document).ready(function () {
 
   function updateSelectedPalette(paletteName) {
     wledControlConfig.selectedPalette = paletteName;
+
+    if (wledControlConfig.effectDetails.hasOwnProperty('Palette')) {
+      wledControlConfig.effectDetails.Palette = paletteName;
+    }
     
     // Update the palette buttons in the color tab
     $('.palette-btn').removeClass('selected');
@@ -849,6 +853,7 @@ $(document).ready(function () {
     } else {updatingColorBasedOnPalette = false;}
     
     SaveWledControlConfig();
+    updatePaletteDropdown();
   }
   
   function findPaletteByName(name) {
