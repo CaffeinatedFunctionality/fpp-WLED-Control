@@ -5,7 +5,7 @@ $(document).ready(function () {
     brightness: 255,
     colors: [],
     multisync: false,
-    effect: 'WLED - Solid Pattern',
+    effect: 'Solid',
     power: false,
     customPalettes: [],
     effectDetails: {},
@@ -31,37 +31,8 @@ $(document).ready(function () {
         })
         .catch(error => {
           console.error('Fetch error:', error)
-          fallbackXHR()
         })
-    } else {
-      fallbackXHR()
     }
-  }
-
-  function fallbackXHR() {
-    const xhr = new XMLHttpRequest()
-    const url = '/api/configfile/plugin.fpp-WLED-Control.json'
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        if (xhr.status === 200) {
-          try {
-            const data = JSON.parse(xhr.responseText)
-            console.log('Config loaded successfully via XHR:', data)
-            processConfig(data)
-          } catch (e) {
-            console.error('Failed to parse response as JSON:', e)
-            useDefaultConfig()
-          }
-        } else {
-          console.error('XHR error. Status:', xhr.status)
-          useDefaultConfig()
-        }
-      }
-    }
-
-    xhr.open('GET', url, true)
-    xhr.send()
   }
 
   function processConfig(data) {
@@ -77,25 +48,6 @@ $(document).ready(function () {
     initializeColorPickers();
     updateCustomColorDisplay();
     updatePaletteDropdown();
-    
-  }
-
-  function useDefaultConfig() {
-    console.log('Using default configuration')
-    wledControlConfig = {
-      systems: [],
-      models: [],
-      brightness: 128,
-      colors: [],
-      multisync: false,
-      effect: 'WLED - Solid Pattern',
-      power: false,
-      customPalettes: [],
-      effectDetails: {}
-    }
-    updateUIFromConfig()
-    populatePalettes()
-    getEffectsList()
   }
 
   function SaveWledControlConfig() {
