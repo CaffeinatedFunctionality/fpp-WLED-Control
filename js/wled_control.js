@@ -204,13 +204,27 @@ $(document).ready(function () {
   }
 
   const colorPicker = new iro.ColorPicker('#colorPicker', {
-    width: 260,
+    width: 300,
     color: '#ff0000',
     borderWidth: 0,
     padding: 4,
     wheelLightness: false,
     wheelAngle: 270,
-    wheelDirection: 'clockwise'
+    wheelDirection: 'clockwise',
+    layout: [
+      {
+        component: iro.ui.Wheel,
+        options: {}
+      },
+      {
+        component: iro.ui.Slider,
+        options: {
+          sliderType: 'value',
+          width: 300,
+          height: 28
+        }
+      }
+    ]
   })
 
   const saturationSlider = new iro.ColorPicker('#saturationSlider', {
@@ -221,7 +235,9 @@ $(document).ready(function () {
       {
         component: iro.ui.Slider,
         options: {
-          sliderType: 'saturation'
+          sliderType: 'saturation',
+          width: 300,
+          height: 28
         }
       }
     ]
@@ -286,12 +302,19 @@ $(document).ready(function () {
 
         data.args.forEach(arg => {
           if (arg.type === 'range') {
-            wledControlConfig.effectDetails[arg.name] = parseInt(arg.default)
+            if (arg.name === 'Brightness') {
+              wledControlConfig.effectDetails[arg.name] = wledControlConfig.brightness
+            } else {
+              wledControlConfig.effectDetails[arg.name] = parseInt(arg.default)
+            }
           } else if (arg.type === 'color') {
             wledControlConfig.colors.push(arg.default)
           } else if (arg.type === 'string' && arg.contents) {
-            wledControlConfig.effectDetails[arg.name] =
-              arg.default || arg.contents[0]
+            if (arg.name === 'Palette') {
+              wledControlConfig.effectDetails[arg.name] = wledControlConfig.palette || arg.default || arg.contents[0]
+            } else {
+              wledControlConfig.effectDetails[arg.name] = arg.default || arg.contents[0]
+            }
           }
         })
 
@@ -464,6 +487,9 @@ $(document).ready(function () {
 
   // Palette selection
   $('#paletteList').on('click', '.palette-btn', function () {
+    $('.palette-btn').removeClass('selected');
+    $(this).addClass('selected');
+
     const paletteIndex = $(this).data('palette-index')
     let selectedPalette
 
@@ -472,6 +498,8 @@ $(document).ready(function () {
     } else {
       selectedPalette = palettes[paletteIndex]
     }
+
+    wledControlConfig.palette = selectedPalette.name;
 
     wledControlConfig.colors = selectedPalette.colors
       .slice(0, 3)
@@ -486,6 +514,7 @@ $(document).ready(function () {
       updateSaturationSlider(colorPicker.color)
     }
     SaveWledControlConfig()
+    updateControlValues();
   })
 
   // Effect selection
