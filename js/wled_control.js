@@ -72,10 +72,6 @@ $(document).ready(function () {
     if (!wledControlConfig.selectedPalette) {
       wledControlConfig.selectedPalette = '* Colors Only'
     }
-    updatePaletteDropdown();
-    updateUIFromConfig()
-    populatePalettes()
-    getEffectsList()
   }
 
   function useDefaultConfig() {
@@ -224,7 +220,6 @@ $(document).ready(function () {
 
   const colorPicker = new iro.ColorPicker('#colorPicker', {
     width: 300,
-    color: '#ff0000',
     borderWidth: 0,
     padding: 4,
     wheelLightness: false,
@@ -863,11 +858,14 @@ $(document).ready(function () {
     // Update the palette buttons in the color tab
     $('.palette-btn').removeClass('selected');
     $(`.palette-btn[data-palette-name="${paletteName}"]`).addClass('selected');
+
+    updatingColorBasedOnPalette = true;
     
     // Update the colors based on the selected palette
     const selectedPalette = findPaletteByName(paletteName);
     if (selectedPalette) {
       wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
+      wledControlConfig.selectedPalette = selectedPalette.name;
       while (wledControlConfig.colors.length < 3) {
         wledControlConfig.colors.push(null);
       }
@@ -875,7 +873,7 @@ $(document).ready(function () {
       if (wledControlConfig.colors[0]) {
         colorPicker.color.set(wledControlConfig.colors[0]);
       }
-    }
+    } else {updatingColorBasedOnPalette = false;}
     
     SaveWledControlConfig();
   }
@@ -886,10 +884,8 @@ $(document).ready(function () {
            existingPalettes.find(p => p.name === name);
   }
 
-  initializeColorPickers()
   populatePalettes()
   getEffectsList()
-  GetWledControlConfig()
 
   function initializeBrightnessSlider() {
     $('#brightnessSlider').val(wledControlConfig.brightness);
@@ -897,5 +893,13 @@ $(document).ready(function () {
   
   GetWledControlConfig().then(() => {
     initializeBrightnessSlider();
+    initializeColorPickers();
+    updateCustomColorDisplay();
+    updatePaletteDropdown();
+    updateUIFromConfig()
+    populatePalettes()
+    getEffectsList()
+    initializeColorPickers();
+    updateCustomColorDisplay();
   });
 })
