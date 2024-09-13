@@ -678,6 +678,7 @@ $(document).ready(function () {
 
   saturationSlider.on('color:change', function (color) {
     colorPicker.color.saturation = color.saturation;
+    wledControlConfig.colors[selectedColorIndex] = colorPicker.color.hexString;
     updateCustomColorDisplay();
     
     // Update the selected palette to "Colors Only" if it's not already a special palette
@@ -685,10 +686,10 @@ $(document).ready(function () {
     if (!currentPalette.startsWith('*')) {
       unselectPalette();
     }
-  })
+    SaveWledControlConfig();
+  });
 
   // Palette Functions
-
   function createGradientString(colors) {
     if (colors.length === 1) {
       return colors[0];
@@ -788,7 +789,7 @@ $(document).ready(function () {
   
     const paletteIndex = $(this).data('palette-index');
     let selectedPalette;
-
+  
     if ($(this).hasClass('custom-palette')) {
       selectedPalette = wledControlConfig.customPalettes[paletteIndex];
     } else {
@@ -812,8 +813,8 @@ $(document).ready(function () {
           wledControlConfig.colors = wledControlConfig.colors.filter(color => color !== null);
           break;
       }
-    } else if (!wasSelected) {
-      // Handle regular palettes only if it wasn't already selected
+    } else {
+      // Handle regular palettes
       wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
       while (wledControlConfig.colors.length < 3) {
         wledControlConfig.colors.push(null);
