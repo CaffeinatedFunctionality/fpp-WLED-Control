@@ -838,10 +838,7 @@ $(document).ready(function () {
     const paletteDropdown = $('#PaletteDropdown');
     if (paletteDropdown.length) {
       paletteDropdown.empty();
-      palettes.forEach((palette, index) => {
-        paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
-      });
-      wledControlConfig.customPalettes.forEach((palette, index) => {
+      specialPalettes.concat(wledControlConfig.customPalettes, existingPalettes).forEach((palette) => {
         paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
       });
       paletteDropdown.val(wledControlConfig.selectedPalette);
@@ -850,6 +847,40 @@ $(document).ready(function () {
     $('.palette-btn').removeClass('selected');
     $(`.palette-btn[data-palette-name="${wledControlConfig.selectedPalette}"]`).addClass('selected');
   }
+
+  function updateSelectedPalette(paletteName) {
+    wledControlConfig.selectedPalette = paletteName;
+    
+    // Update the palette buttons in the color tab
+    $('.palette-btn').removeClass('selected');
+    $(`.palette-btn[data-palette-name="${paletteName}"]`).addClass('selected');
+    
+    // Update the colors based on the selected palette
+    const selectedPalette = findPaletteByName(paletteName);
+    if (selectedPalette) {
+      wledControlConfig.colors = selectedPalette.colors.slice(0, 3);
+      while (wledControlConfig.colors.length < 3) {
+        wledControlConfig.colors.push(null);
+      }
+      updateCustomColorDisplay();
+      if (wledControlConfig.colors[0]) {
+        colorPicker.color.set(wledControlConfig.colors[0]);
+      }
+    }
+    
+    SaveWledControlConfig();
+  }
+  
+  function findPaletteByName(name) {
+    return specialPalettes.find(p => p.name === name) ||
+           wledControlConfig.customPalettes.find(p => p.name === name) ||
+           existingPalettes.find(p => p.name === name);
+  }
+
+  $('#paletteDropdown').on('change', function() {
+    const selectedPaletteName = $(this).val();
+    updateSelectedPalette(selectedPaletteName);
+  });
 
   initializeColorPickers()
   populatePalettes()
