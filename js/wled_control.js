@@ -796,15 +796,6 @@ $(document).ready(function () {
     updateSpecialPaletteBackgrounds();
   }
 
-  function customColorsToPaletteJson() {
-    const colors = wledControlConfig.colors.filter(color => color !== null);
-    const colorStops = colors.map((color, index) => {
-      const position = Math.round((index / (colors.length - 1)) * 255);
-      return [position, color];
-    });
-    return JSON.stringify(colorStops);
-  }
-
   initializeColorPickers()
   populatePalettes()
   getEffectsList()
