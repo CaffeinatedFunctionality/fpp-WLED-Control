@@ -686,13 +686,23 @@ $(document).ready(function () {
     const paletteList = $('#paletteList')
     paletteList.empty()
 
+    specialPalettes.forEach((palette, index) => {
+      const isSelected = wledControlConfig.selectedPalette === palette.name;
+      paletteList.append(`
+        <button class="palette-btn special-palette ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" data-special-palette-index="${index}">
+          <span class="palette-name">${palette.name}</span>
+          <div class="palette-preview"></div>
+        </button>
+      `);
+    });
+
     // Add custom palettes first
     if (wledControlConfig.customPalettes) {
       wledControlConfig.customPalettes.forEach((palette, index) => {
         const gradientColors = createGradientString(palette.colors);
         const isSelected = wledControlConfig.selectedPalette === palette.name;
         paletteList.append(`
-          <button class="palette-btn custom-palette ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" data-palette-index="${index}">
+          <button class="palette-btn custom-palette ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" data-custom-palette-index="${index}">
             <span class="palette-name">${palette.name}</span>
             <div class="palette-preview" style="background: ${gradientColors};"></div>
           </button>
@@ -700,26 +710,15 @@ $(document).ready(function () {
       })
     }
 
-    // Add standard palettes
-    palettes.forEach((palette, index) => {
-      const paletteButton = $('<button>')
-        .addClass('palette-btn')
-        .attr('data-palette-index', index)
-        .attr('data-palette-name', palette.name)
-        .html(`<span class="palette-name">${palette.name}</span><div class="palette-preview"></div>`);
-    
-      if (palette.colors.length > 0) {
-        const gradientColors = createGradientString(palette.colors);
-        paletteButton.find('.palette-preview').css('background', gradientColors);
-      } else {
-        paletteButton.addClass('special-palette');
-      }
-  
-      if (wledControlConfig.selectedPalette === palette.name) {
-        paletteButton.addClass('selected');
-      }
-    
-      paletteList.append(paletteButton);
+    existingPalettes.forEach((palette, index) => {
+      const gradientColors = createGradientString(palette.colors);
+      const isSelected = wledControlConfig.selectedPalette === palette.name;
+      paletteList.append(`
+        <button class="palette-btn ${isSelected ? 'selected' : ''}" data-palette-name="${palette.name}" data-palette-index="${index}">
+          <span class="palette-name">${palette.name}</span>
+          <div class="palette-preview" style="background: ${gradientColors};"></div>
+        </button>
+      `);
     });
 
     // Set the background for special palettes
@@ -764,7 +763,16 @@ $(document).ready(function () {
     const paletteIndex = $(this).data('palette-index');
     let selectedPalette;
   
-    selectedPalette = palettes[paletteIndex];
+    if ($(this).hasClass('special-palette')) {
+      const paletteIndex = $(this).data('special-palette-index');
+      selectedPalette = specialPalettes[paletteIndex];
+    } else if ($(this).hasClass('custom-palette')) {
+      const customPaletteIndex = $(this).data('custom-palette-index');
+      selectedPalette = wledControlConfig.customPalettes[customPaletteIndex];
+    } else {
+      const paletteIndex = $(this).data('palette-index');
+      selectedPalette = existingPalettes[paletteIndex];
+    }
   
     updatingColorBasedOnPalette = true;
   
@@ -831,16 +839,14 @@ $(document).ready(function () {
     if (paletteDropdown.length) {
       paletteDropdown.empty();
       palettes.forEach((palette, index) => {
-        if (!palette.name.startsWith('*')) {
-          paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
-        }
+        paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
       });
       wledControlConfig.customPalettes.forEach((palette, index) => {
         paletteDropdown.append(`<option value="${palette.name}">${palette.name}</option>`);
       });
       paletteDropdown.val(wledControlConfig.selectedPalette);
     }
-
+  
     $('.palette-btn').removeClass('selected');
     $(`.palette-btn[data-palette-name="${wledControlConfig.selectedPalette}"]`).addClass('selected');
   }
